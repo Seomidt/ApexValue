@@ -342,6 +342,12 @@ export default function Settings() {
                   <SelectContent>
                     <SelectItem value="da">Dansk</SelectItem>
                     <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="nl">Nederlands</SelectItem>
+                    <SelectItem value="sv">Svenska</SelectItem>
+                    <SelectItem value="no">Norsk</SelectItem>
+                    <SelectItem value="pl">Polski</SelectItem>
+                    <SelectItem value="fr">Fran\u00e7ais</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
