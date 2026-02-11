@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppMode } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle } from "lucide-react";
+import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { MARKET_COUNTRIES } from "@shared/schema";
 
@@ -229,6 +229,19 @@ export default function Settings() {
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
   const [testingKeys, setTestingKeys] = useState<Set<string>>(new Set());
 
+  const savedMarket = localStorage.getItem("apexvalue_market") || "DK";
+  const savedLanguage = localStorage.getItem("apexvalue_language") || "da";
+  const [marketCountry, setMarketCountry] = useState(savedMarket);
+  const [language, setLanguage] = useState(savedLanguage);
+  const [orgDirty, setOrgDirty] = useState(false);
+
+  const handleSaveOrgSettings = () => {
+    localStorage.setItem("apexvalue_market", marketCountry);
+    localStorage.setItem("apexvalue_language", language);
+    setOrgDirty(false);
+    toast({ title: "Indstillinger gemt", description: "Dine organisationsindstillinger er blevet gemt." });
+  };
+
   const handleSaveKey = (key: string, apiKey: string, apiSecret: string) => {
     setConfiguredKeys(prev => { const next = new Set(Array.from(prev)); next.add(key); return next; });
     setSavedCredentials(prev => ({ ...prev, [key]: { apiKey, apiSecret } }));
@@ -320,7 +333,7 @@ export default function Settings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Markedsland</Label>
-                <Select defaultValue="DK">
+                <Select value={marketCountry} onValueChange={(v) => { setMarketCountry(v); setOrgDirty(true); }}>
                   <SelectTrigger data-testid="select-market-country">
                     <SelectValue />
                   </SelectTrigger>
@@ -335,7 +348,7 @@ export default function Settings() {
               </div>
               <div>
                 <Label className="text-xs">Sprog</Label>
-                <Select defaultValue="da">
+                <Select value={language} onValueChange={(v) => { setLanguage(v); setOrgDirty(true); }}>
                   <SelectTrigger data-testid="select-language">
                     <SelectValue />
                   </SelectTrigger>
@@ -360,6 +373,12 @@ export default function Settings() {
               <p className="text-xs text-muted-foreground">
                 Teamstyring er tilgængelig på Pro og Team planer. Opgrader for at invitere teammedlemmer.
               </p>
+            </div>
+            <Separator />
+            <div className="flex justify-end">
+              <Button onClick={handleSaveOrgSettings} disabled={!orgDirty} data-testid="button-save-org-settings">
+                <Save className="w-3.5 h-3.5 mr-1.5" /> Gem indstillinger
+              </Button>
             </div>
           </Card>
         </TabsContent>
