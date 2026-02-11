@@ -78,7 +78,7 @@ function ModeToggle() {
       </div>
       {mode === "live" && (
         <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-          Connected
+          Tilsluttet
         </Badge>
       )}
     </div>
@@ -106,7 +106,7 @@ function MainLayout() {
               {!user && (
                 <a href="/api/login">
                   <Button size="sm" variant="outline" data-testid="button-header-login">
-                    <LogIn className="w-3.5 h-3.5 mr-1" /> Sign In
+                    <LogIn className="w-3.5 h-3.5 mr-1" /> Log Ind
                   </Button>
                 </a>
               )}

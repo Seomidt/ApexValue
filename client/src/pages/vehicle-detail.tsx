@@ -340,7 +340,9 @@ export default function VehicleDetail() {
             )}
             <Separator className="my-3" />
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>Status: <Badge variant="outline" className="text-xs ml-1">{v.status}</Badge></p>
+              <p>Status: <Badge variant="outline" className="text-xs ml-1">{
+                ({ found: "Fundet", evaluating: "Under vurdering", bid_placed: "Bud afgivet", won: "Vundet", transport: "Transport", preparation: "Klargøring", ready_for_sale: "Klar til salg", online: "Online", sold: "Solgt" } as Record<string, string>)[v.status] || v.status
+              }</Badge></p>
               <p>Oprettet: {v.createdAt ? new Date(v.createdAt).toLocaleDateString("da-DK") : "N/A"}</p>
             </div>
           </Card>
