@@ -5,31 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcProfit } from "@/lib/calculations";
 import { Shield, Building2, Users, BarChart3, Activity, Database, Globe, Clock, TrendingUp, AlertTriangle, Lock } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
-
-const fuelLabels: Record<string, string> = {
-  petrol: "Benzin",
-  diesel: "Diesel",
-  electric: "El",
-  hybrid: "Hybrid",
-  unknown: "Ukendt",
-};
-
-const statusLabels: Record<string, string> = {
-  found: "Fundet",
-  evaluating: "Under vurdering",
-  bid_placed: "Bud afgivet",
-  won: "Vundet",
-  transport: "Transport",
-  preparation: "Klargøring",
-  ready_for_sale: "Klar til salg",
-  online: "Online",
-  sold: "Solgt",
-};
 
 function StatCard({ title, value, subtitle, icon: Icon }: {
   title: string; value: string; subtitle?: string; icon: any;
@@ -52,6 +32,7 @@ function StatCard({ title, value, subtitle, icon: Icon }: {
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const { data: vehicles, isLoading: vehiclesLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
     enabled: !!user?.isAdmin,
@@ -60,6 +41,26 @@ export default function Admin() {
     queryKey: ["/api/admin/stats"],
     enabled: !!user?.isAdmin,
   });
+
+  const fuelLabels: Record<string, string> = {
+    petrol: t("fuel.petrol"),
+    diesel: t("fuel.diesel"),
+    electric: t("fuel.electric"),
+    hybrid: t("fuel.hybrid"),
+    unknown: t("common.unknown"),
+  };
+
+  const statusLabels: Record<string, string> = {
+    found: t("status.found"),
+    evaluating: t("status.evaluating"),
+    bid_placed: t("status.bid_placed"),
+    won: t("status.won"),
+    transport: t("status.transport"),
+    preparation: t("status.preparation"),
+    ready_for_sale: t("status.ready_for_sale"),
+    online: t("status.online"),
+    sold: t("status.sold"),
+  };
 
   if (authLoading) {
     return (
@@ -80,9 +81,9 @@ export default function Admin() {
         <div className="rounded-full bg-muted p-4">
           <Lock className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h2 className="text-xl font-semibold" data-testid="text-admin-denied">Adgang nægtet</h2>
+        <h2 className="text-xl font-semibold" data-testid="text-admin-denied">{t("admin.access_denied")}</h2>
         <p className="text-muted-foreground text-sm text-center max-w-md" data-testid="text-admin-denied-desc">
-          Denne side er kun tilgængelig for administratorer. Kontakt din administrator for at få adgang.
+          {t("admin.access_denied_desc")}
         </p>
       </div>
     );
@@ -108,15 +109,15 @@ export default function Admin() {
   }, {} as Record<string, number>);
 
   const countryDistribution = allVehicles.reduce((acc, v) => {
-    acc[v.sourceCountry || "Ukendt"] = (acc[v.sourceCountry || "Ukendt"] || 0) + 1;
+    acc[v.sourceCountry || t("common.unknown")] = (acc[v.sourceCountry || t("common.unknown")] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const demoOrgs = [
-    { name: "Demo Organisation", slug: "demo-org", plan: "free", users: 1, vehicles: allVehicles.length, status: "aktiv" },
-    { name: "Nordic Motors ApS", slug: "nordic-motors", plan: "pro", users: 4, vehicles: 0, status: "aktiv" },
-    { name: "AutoDanmark Import", slug: "auto-dk", plan: "team", users: 8, vehicles: 0, status: "aktiv" },
-    { name: "Test Org", slug: "test-org", plan: "free", users: 1, vehicles: 0, status: "inaktiv" },
+    { name: "Demo Organisation", slug: "demo-org", plan: "free", users: 1, vehicles: allVehicles.length, status: t("common.active") },
+    { name: "Nordic Motors ApS", slug: "nordic-motors", plan: "pro", users: 4, vehicles: 0, status: t("common.active") },
+    { name: "AutoDanmark Import", slug: "auto-dk", plan: "team", users: 8, vehicles: 0, status: t("common.active") },
+    { name: "Test Org", slug: "test-org", plan: "free", users: 1, vehicles: 0, status: t("common.inactive") },
   ];
 
   if (isLoading) {
@@ -134,28 +135,28 @@ export default function Admin() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <Shield className="w-5 h-5" /> SuperAdmin Panel
+          <Shield className="w-5 h-5" /> {t("admin.title")}
         </h1>
-        <p className="text-sm text-muted-foreground">Platformoversigt, organisationsstyring, brugsanalyse</p>
+        <p className="text-sm text-muted-foreground">{t("admin.subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard title="Organisationer" value={String(demoOrgs.length)} subtitle={`${demoOrgs.filter(o => o.status === "aktiv").length} aktive`} icon={Building2} />
-        <StatCard title="Brugere i Alt" value={String(demoOrgs.reduce((s, o) => s + o.users, 0))} subtitle="på tværs af alle org." icon={Users} />
-        <StatCard title="Biler i Alt" value={String(allVehicles.length)} subtitle={`Gns. score: ${avgScore}`} icon={Database} />
-        <StatCard title="Samlet Potentiel Profit" value={formatCurrency(totalProfit, "DKK")} subtitle="hele platformen" icon={TrendingUp} />
+        <StatCard title={t("admin.organizations")} value={String(demoOrgs.length)} subtitle={`${demoOrgs.filter(o => o.status === t("common.active")).length} ${t("common.active")}`} icon={Building2} />
+        <StatCard title={t("admin.total_users")} value={String(demoOrgs.reduce((s, o) => s + o.users, 0))} subtitle={t("admin.across_orgs")} icon={Users} />
+        <StatCard title={t("admin.total_vehicles")} value={String(allVehicles.length)} subtitle={`${t("reports.avg_score")}: ${avgScore}`} icon={Database} />
+        <StatCard title={t("admin.total_potential_profit")} value={formatCurrency(totalProfit, "DKK")} subtitle={t("admin.entire_platform")} icon={TrendingUp} />
       </div>
 
       <Tabs defaultValue="organizations" className="space-y-3">
         <TabsList className="flex-wrap">
           <TabsTrigger value="organizations" data-testid="tab-organizations">
-            <Building2 className="w-3.5 h-3.5 mr-1" /> Organisationer
+            <Building2 className="w-3.5 h-3.5 mr-1" /> {t("admin.tab_organizations")}
           </TabsTrigger>
           <TabsTrigger value="usage" data-testid="tab-usage">
-            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Forbrug
+            <BarChart3 className="w-3.5 h-3.5 mr-1" /> {t("admin.tab_usage")}
           </TabsTrigger>
           <TabsTrigger value="analytics" data-testid="tab-analytics">
-            <Activity className="w-3.5 h-3.5 mr-1" /> Analyse
+            <Activity className="w-3.5 h-3.5 mr-1" /> {t("admin.tab_analytics")}
           </TabsTrigger>
         </TabsList>
 
@@ -164,12 +165,12 @@ export default function Admin() {
             <table className="w-full text-sm" data-testid="table-organizations">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b">
-                  <th className="p-3 font-medium">Organisation</th>
-                  <th className="p-3 font-medium">Slug</th>
-                  <th className="p-3 font-medium">Plan</th>
-                  <th className="p-3 font-medium text-center">Brugere</th>
-                  <th className="p-3 font-medium text-center">Biler</th>
-                  <th className="p-3 font-medium">Status</th>
+                  <th className="p-3 font-medium">{t("admin.organization")}</th>
+                  <th className="p-3 font-medium">{t("admin.slug")}</th>
+                  <th className="p-3 font-medium">{t("admin.plan")}</th>
+                  <th className="p-3 font-medium text-center">{t("admin.users")}</th>
+                  <th className="p-3 font-medium text-center">{t("common.vehicles")}</th>
+                  <th className="p-3 font-medium">{t("common.status")}</th>
                   <th className="p-3 font-medium"></th>
                 </tr>
               </thead>
@@ -192,14 +193,14 @@ export default function Admin() {
                     <td className="p-3 text-center tabular-nums">{org.vehicles}</td>
                     <td className="p-3">
                       <Badge variant="outline" className={`text-xs ${
-                        org.status === "aktiv" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
+                        org.status === t("common.active") ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
                         "bg-muted text-muted-foreground"
                       }`}>
                         {org.status}
                       </Badge>
                     </td>
                     <td className="p-3 text-right">
-                      <Button size="sm" variant="ghost" data-testid={`button-manage-${org.slug}`}>Administrer</Button>
+                      <Button size="sm" variant="ghost" data-testid={`button-manage-${org.slug}`}>{t("common.manage")}</Button>
                     </td>
                   </tr>
                 ))}
@@ -212,7 +213,7 @@ export default function Admin() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4" /> Kildelande
+                <Globe className="w-4 h-4" /> {t("admin.source_countries")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(countryDistribution).sort((a, b) => b[1] - a[1]).map(([country, count]) => (
@@ -231,7 +232,7 @@ export default function Admin() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" /> Pipeline Status
+                <BarChart3 className="w-4 h-4" /> {t("admin.pipeline_status")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(statusDistribution).sort((a, b) => b[1] - a[1]).map(([status, count]) => (
@@ -250,7 +251,7 @@ export default function Admin() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Brændstoffordeling
+                <Activity className="w-4 h-4" /> {t("admin.fuel_distribution")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(fuelDistribution).sort((a, b) => b[1] - a[1]).map(([fuel, count]) => (
@@ -269,23 +270,23 @@ export default function Admin() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Seneste Aktivitet
+                <Clock className="w-4 h-4" /> {t("admin.recent_activity")}
               </h3>
               <div className="space-y-2 text-xs">
                 <div className="flex items-center gap-2 py-1.5 border-b">
                   <Badge variant="secondary" className="text-[10px]">NY</Badge>
-                  <span>Demo Organisation tilføjede 38 biler</span>
-                  <span className="text-muted-foreground ml-auto">Lige nu</span>
+                  <span>{t("admin.demo_added")}</span>
+                  <span className="text-muted-foreground ml-auto">{t("common.right_now")}</span>
                 </div>
                 <div className="flex items-center gap-2 py-1.5 border-b">
                   <Badge variant="secondary" className="text-[10px]">SYS</Badge>
-                  <span>Markedssammenligninger genereret (500+ sammenligninger)</span>
-                  <span className="text-muted-foreground ml-auto">Lige nu</span>
+                  <span>{t("admin.comps_generated")}</span>
+                  <span className="text-muted-foreground ml-auto">{t("common.right_now")}</span>
                 </div>
                 <div className="flex items-center gap-2 py-1.5 border-b">
                   <Badge variant="secondary" className="text-[10px]">SYS</Badge>
-                  <span>Omkostningsskabeloner oprettet (11 skabeloner, 8 markeder)</span>
-                  <span className="text-muted-foreground ml-auto">Lige nu</span>
+                  <span>{t("admin.templates_created")}</span>
+                  <span className="text-muted-foreground ml-auto">{t("common.right_now")}</span>
                 </div>
               </div>
             </Card>
@@ -295,12 +296,11 @@ export default function Admin() {
         <TabsContent value="analytics">
           <Card className="p-4 text-center py-12">
             <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-sm font-semibold mb-1">Avanceret Analyse</h3>
+            <h3 className="text-sm font-semibold mb-1">{t("admin.advanced_analytics")}</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Realtids brugertracking, funktionsadoptionsmålinger, konverteringstragte
-              og omsætningsanalyse. Tilgængelig med live dataintegration.
+              {t("admin.advanced_desc")}
             </p>
-            <Button variant="outline" className="mt-4" disabled>Kommer Snart</Button>
+            <Button variant="outline" className="mt-4" disabled>{t("common.coming_soon")}</Button>
           </Card>
         </TabsContent>
       </Tabs>

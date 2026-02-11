@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { getDealRecommendation } from "@/lib/calculations";
+import { useLanguage } from "@/lib/i18n";
 
 interface DealScoreBadgeProps {
   score: number;
@@ -34,7 +35,8 @@ export function DealScoreBadge({ score, size = "md" }: DealScoreBadgeProps) {
 
 export function DealRecommendationBadge({ score }: { score: number }) {
   const rec = getDealRecommendation(score);
-  const labels = { buy: "KØB", consider: "OVERVEJ", drop: "DROP" };
+  const { t } = useLanguage();
+  const labels = { buy: t("common.buy"), consider: t("common.consider"), drop: t("common.drop") };
   const colors = {
     buy: "bg-emerald-500 text-white",
     consider: "bg-amber-500 text-white",

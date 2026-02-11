@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getDealRecommendation, getRiskFlags } from "@/lib/calculations";
 import { FileText, Download, Clock, BarChart3, TrendingUp, AlertTriangle, FileDown, Printer, Globe, Activity } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
@@ -139,6 +139,7 @@ export default function Reports() {
   const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([]);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const { data: vehicles, isLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
@@ -162,9 +163,9 @@ export default function Reports() {
         generatedAt: new Date(),
         dealScore: vehicle.dealScore || 0,
       }, ...prev]);
-      toast({ title: "PDF Genereret", description: `Rapport for ${vehicle.make} ${vehicle.model} er downloadet.` });
+      toast({ title: t("reports.pdf_generated"), description: t("reports.pdf_downloaded").replace("{name}", `${vehicle.make} ${vehicle.model}`) });
     } catch {
-      toast({ title: "Fejl", description: "Kunne ikke generere PDF.", variant: "destructive" });
+      toast({ title: t("pipeline.error"), description: t("reports.error_pdf"), variant: "destructive" });
     }
     setGeneratingId(null);
   };
@@ -175,22 +176,22 @@ export default function Reports() {
   const totalProfitNormal = allVehicles.reduce((s, v) => s + calcProfit(v, "normal"), 0);
 
   const countryBreakdown = allVehicles.reduce((acc, v) => {
-    const c = v.sourceCountry || "Ukendt";
+    const c = v.sourceCountry || t("common.unknown");
     acc[c] = (acc[c] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const fuelBreakdown = allVehicles.reduce((acc, v) => {
-    const fuelLabels: Record<string, string> = { petrol: "Benzin", diesel: "Diesel", electric: "El", hybrid: "Hybrid" };
-    const f = fuelLabels[v.fuelType || ""] || v.fuelType || "Ukendt";
+    const fuelLabels: Record<string, string> = { petrol: t("fuel.petrol"), diesel: t("fuel.diesel"), electric: t("fuel.electric"), hybrid: t("fuel.hybrid") };
+    const f = fuelLabels[v.fuelType || ""] || v.fuelType || t("common.unknown");
     acc[f] = (acc[f] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const scoreRanges = [
-    { label: "Hot (70-100)", count: allVehicles.filter(v => (v.dealScore || 0) >= 70).length, color: "bg-emerald-500" },
-    { label: "Overvej (40-69)", count: allVehicles.filter(v => (v.dealScore || 0) >= 40 && (v.dealScore || 0) < 70).length, color: "bg-[#FF6319]" },
-    { label: "Risiko (0-39)", count: allVehicles.filter(v => (v.dealScore || 0) < 40).length, color: "bg-destructive" },
+    { label: t("reports.hot_range"), count: allVehicles.filter(v => (v.dealScore || 0) >= 70).length, color: "bg-emerald-500" },
+    { label: t("reports.consider_range"), count: allVehicles.filter(v => (v.dealScore || 0) >= 40 && (v.dealScore || 0) < 70).length, color: "bg-[#FF6319]" },
+    { label: t("reports.risk_range"), count: allVehicles.filter(v => (v.dealScore || 0) < 40).length, color: "bg-destructive" },
   ];
 
   if (isLoading) {
@@ -208,51 +209,51 @@ export default function Reports() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <FileText className="w-5 h-5" /> Rapporter & Analyse
+          <FileText className="w-5 h-5" /> {t("reports.title")}
         </h1>
-        <p className="text-sm text-muted-foreground">PDF-rapporter, porteføljeanalyse og ydeevnemålinger</p>
+        <p className="text-sm text-muted-foreground">{t("reports.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-3">
         <TabsList className="flex-wrap">
           <TabsTrigger value="analytics" data-testid="tab-analytics">
-            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Analyse
+            <BarChart3 className="w-3.5 h-3.5 mr-1" /> {t("reports.tab_analytics")}
           </TabsTrigger>
           <TabsTrigger value="generate" data-testid="tab-generate">
-            <FileDown className="w-3.5 h-3.5 mr-1" /> Generér PDF
+            <FileDown className="w-3.5 h-3.5 mr-1" /> {t("reports.tab_generate")}
           </TabsTrigger>
           <TabsTrigger value="history" data-testid="tab-history">
-            <Clock className="w-3.5 h-3.5 mr-1" /> Historik
+            <Clock className="w-3.5 h-3.5 mr-1" /> {t("reports.tab_history")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Card className="p-3" data-testid="stat-total-vehicles">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Activity className="w-3 h-3" /> Beholdning</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Activity className="w-3 h-3" /> {t("reports.inventory")}</p>
               <p className="text-2xl font-bold mt-1 tabular-nums">{totalVehicles}</p>
-              <p className="text-xs text-muted-foreground">biler i systemet</p>
+              <p className="text-xs text-muted-foreground">{t("reports.vehicles_in_system")}</p>
             </Card>
             <Card className="p-3" data-testid="stat-avg-score">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><BarChart3 className="w-3 h-3" /> Gns. Score</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><BarChart3 className="w-3 h-3" /> {t("reports.avg_score")}</p>
               <p className="text-2xl font-bold mt-1 tabular-nums">{avgScore}</p>
-              <p className="text-xs text-muted-foreground">gennemsnitlig deal score</p>
+              <p className="text-xs text-muted-foreground">{t("reports.avg_deal_score")}</p>
             </Card>
             <Card className="p-3" data-testid="stat-hot-deals">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> Hot Deals</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> {t("dashboard.hot_deals")}</p>
               <p className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">{hotDeals}</p>
               <p className="text-xs text-muted-foreground">score 70+</p>
             </Card>
             <Card className="p-3" data-testid="stat-total-profit">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> Samlet Profit</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> {t("reports.total_profit")}</p>
               <p className="text-xl font-bold mt-1 tabular-nums">{formatCurrency(totalProfitNormal, "DKK")}</p>
-              <p className="text-xs text-muted-foreground">normal scenarie</p>
+              <p className="text-xs text-muted-foreground">{t("reports.normal_scenario")}</p>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
             <Card className="p-4">
-              <h3 className="text-sm font-semibold mb-3">Deal Score Fordeling</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("reports.score_distribution")}</h3>
               <div className="space-y-2.5">
                 {scoreRanges.map(r => (
                   <div key={r.label}>
@@ -270,7 +271,7 @@ export default function Reports() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4" /> Pr. Kildeland
+                <Globe className="w-4 h-4" /> {t("reports.by_country")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(countryBreakdown).sort((a, b) => b[1] - a[1]).map(([country, count]) => (
@@ -288,7 +289,7 @@ export default function Reports() {
             </Card>
 
             <Card className="p-4">
-              <h3 className="text-sm font-semibold mb-3">Pr. Brændstoftype</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("reports.by_fuel")}</h3>
               <div className="space-y-2">
                 {Object.entries(fuelBreakdown).sort((a, b) => b[1] - a[1]).map(([fuel, count]) => (
                   <div key={fuel} className="flex items-center justify-between gap-2">
@@ -306,17 +307,17 @@ export default function Reports() {
           </div>
 
           <Card className="p-4 mt-4">
-            <h3 className="text-sm font-semibold mb-3">Top Performere</h3>
+            <h3 className="text-sm font-semibold mb-3">{t("reports.top_performers")}</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="table-top-performers">
                 <thead>
                   <tr className="text-left text-xs text-muted-foreground border-b">
                     <th className="p-2 font-medium">#</th>
-                    <th className="p-2 font-medium">Bil</th>
-                    <th className="p-2 font-medium text-right">Score</th>
-                    <th className="p-2 font-medium text-right">Fortjeneste</th>
+                    <th className="p-2 font-medium">{t("dashboard.car")}</th>
+                    <th className="p-2 font-medium text-right">{t("common.score")}</th>
+                    <th className="p-2 font-medium text-right">{t("common.profit")}</th>
                     <th className="p-2 font-medium text-right">ROI</th>
-                    <th className="p-2 font-medium">Land</th>
+                    <th className="p-2 font-medium">{t("common.country")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -342,18 +343,18 @@ export default function Reports() {
             <div className="text-sm">
               <p className="font-medium">Demo Mode</p>
               <p className="text-muted-foreground text-xs mt-0.5">
-                PDF-rapporter bruger demo-data. Aktivér Live Mode med API-nøgler for reelle markedsdata.
+                {t("reports.demo_note")}
               </p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <h3 className="text-sm font-semibold mb-3">Generér Bilrapport</h3>
-            <p className="text-xs text-muted-foreground mb-3">Vælg en bil for at generere en komplet forhandler-investeringsrapport i PDF.</p>
+            <h3 className="text-sm font-semibold mb-3">{t("reports.generate_title")}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t("reports.generate_hint")}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <Select onValueChange={handleGenerate} disabled={generatingId !== null}>
                 <SelectTrigger className="w-[300px]" data-testid="select-vehicle-report">
-                  <SelectValue placeholder="Vælg bil..." />
+                  <SelectValue placeholder={t("dashboard.select_vehicle")} />
                 </SelectTrigger>
                 <SelectContent>
                   {allVehicles.map(v => (
@@ -363,13 +364,13 @@ export default function Reports() {
                   ))}
                 </SelectContent>
               </Select>
-              {generatingId && <span className="text-xs text-muted-foreground">Genererer...</span>}
+              {generatingId && <span className="text-xs text-muted-foreground">{t("common.generating")}</span>}
             </div>
           </Card>
 
           <Card className="p-4 mt-4">
-            <h3 className="text-sm font-semibold mb-3">Batch Eksport</h3>
-            <p className="text-xs text-muted-foreground mb-3">Eksportér rapporter for alle hot deals eller fuld portefølje.</p>
+            <h3 className="text-sm font-semibold mb-3">{t("reports.batch_export")}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t("reports.batch_hint")}</p>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -380,10 +381,10 @@ export default function Reports() {
                   for (const v of hotDealVehicles) {
                     await generatePDF(v);
                   }
-                  toast({ title: "Batch Eksport Færdig", description: `${hotDealVehicles.length} hot deal PDF'er genereret.` });
+                  toast({ title: t("reports.batch_done"), description: t("reports.batch_count").replace("{count}", String(hotDealVehicles.length)) });
                 }}
               >
-                <Download className="w-3.5 h-3.5 mr-1" /> Eksportér Hot Deals ({hotDeals})
+                <Download className="w-3.5 h-3.5 mr-1" /> {t("reports.export_hot_deals")} ({hotDeals})
               </Button>
               <Button
                 variant="outline"
@@ -393,10 +394,10 @@ export default function Reports() {
                   for (const v of allVehicles.slice(0, 5)) {
                     await generatePDF(v);
                   }
-                  toast({ title: "Eksport Startet", description: "De første 5 rapporter er genereret. Fuld batch tilgængelig i Live Mode." });
+                  toast({ title: t("reports.export_started"), description: t("reports.export_first5") });
                 }}
               >
-                <Printer className="w-3.5 h-3.5 mr-1" /> Eksportér Alle (Demo: første 5)
+                <Printer className="w-3.5 h-3.5 mr-1" /> {t("reports.export_all")}
               </Button>
             </div>
           </Card>
@@ -408,9 +409,9 @@ export default function Reports() {
               <table className="w-full text-sm" data-testid="table-report-history">
                 <thead>
                   <tr className="text-left text-xs text-muted-foreground border-b">
-                    <th className="p-3 font-medium">Bil</th>
-                    <th className="p-3 font-medium text-center">Score</th>
-                    <th className="p-3 font-medium">Genereret</th>
+                    <th className="p-3 font-medium">{t("dashboard.car")}</th>
+                    <th className="p-3 font-medium text-center">{t("common.score")}</th>
+                    <th className="p-3 font-medium">{t("reports.generated")}</th>
                     <th className="p-3 font-medium"></th>
                   </tr>
                 </thead>
@@ -430,7 +431,7 @@ export default function Reports() {
                           }}
                           data-testid={`button-regenerate-${i}`}
                         >
-                          <Download className="w-3 h-3 mr-1" /> Download igen
+                          <Download className="w-3 h-3 mr-1" /> {t("reports.download_again")}
                         </Button>
                       </td>
                     </tr>
@@ -441,9 +442,9 @@ export default function Reports() {
           ) : (
             <Card className="p-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <h3 className="text-sm font-semibold mb-1">Ingen rapporter genereret endnu</h3>
+              <h3 className="text-sm font-semibold mb-1">{t("reports.no_reports")}</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Brug fanen &quot;Generér PDF&quot; for at oprette forhandler-investeringsrapporter for enhver bil.
+                {t("reports.no_reports_hint")}
               </p>
             </Card>
           )}

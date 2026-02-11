@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/i18n";
+import { formatCurrency, useLanguage } from "@/lib/i18n";
 import { Layers, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CostTemplate } from "@shared/schema";
 
 export default function CostTemplates() {
+  const { t } = useLanguage();
   const { data: templates, isLoading } = useQuery<CostTemplate[]>({
     queryKey: ["/api/cost-templates"],
   });
@@ -31,9 +32,9 @@ export default function CostTemplates() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-            <Layers className="w-5 h-5" /> Omkostningsskabeloner
+            <Layers className="w-5 h-5" /> {t("cost.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Standard omkostningspakker pr. marked</p>
+          <p className="text-sm text-muted-foreground">{t("cost.subtitle")}</p>
         </div>
       </div>
 
@@ -50,35 +51,35 @@ export default function CostTemplates() {
                     <Badge variant="outline" className="text-xs">{template.marketCountry}</Badge>
                     <Badge variant="outline" className="text-xs">{template.currency}</Badge>
                     {template.isDefault && (
-                      <Badge variant="secondary" className="text-xs">Standard</Badge>
+                      <Badge variant="secondary" className="text-xs">{t("cost.default")}</Badge>
                     )}
                   </div>
                 </div>
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Transport</span>
+                  <span className="text-muted-foreground">{t("cost.transport")}</span>
                   <span className="font-semibold tabular-nums">{formatCurrency(template.transport || 0, template.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Klargøring</span>
+                  <span className="text-muted-foreground">{t("cost.preparation")}</span>
                   <span className="font-semibold tabular-nums">{formatCurrency(template.preparation || 0, template.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Syn/Inspektion</span>
+                  <span className="text-muted-foreground">{t("cost.inspection")}</span>
                   <span className="font-semibold tabular-nums">{formatCurrency(template.inspection || 0, template.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nummerplader</span>
+                  <span className="text-muted-foreground">{t("cost.plates")}</span>
                   <span className="font-semibold tabular-nums">{formatCurrency(template.plates || 0, template.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Buffer</span>
+                  <span className="text-muted-foreground">{t("cost.buffer")}</span>
                   <span className="font-semibold tabular-nums">{formatCurrency(template.buffer || 0, template.currency)}</span>
                 </div>
                 <Separator className="my-1" />
                 <div className="flex justify-between font-semibold">
-                  <span>I alt</span>
+                  <span>{t("common.total")}</span>
                   <span className="tabular-nums">{formatCurrency(total, template.currency)}</span>
                 </div>
               </div>
@@ -90,8 +91,8 @@ export default function CostTemplates() {
       {allTemplates.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Layers className="w-12 h-12 text-muted-foreground mb-3" />
-          <h3 className="text-lg font-semibold">Ingen omkostningsskabeloner</h3>
-          <p className="text-sm text-muted-foreground mt-1">Skabeloner vises her i Demo Mode</p>
+          <h3 className="text-lg font-semibold">{t("cost.no_templates")}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{t("cost.demo_hint")}</p>
         </div>
       )}
     </div>

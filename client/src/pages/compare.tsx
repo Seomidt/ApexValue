@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags } from "@/lib/calculations";
 import { GitCompareArrows, Plus, X, TrendingUp, AlertTriangle, Check } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
@@ -48,6 +48,7 @@ function ComparisonRow({ label, values, format, highlight }: {
 }
 
 export default function Compare() {
+  const { t } = useLanguage();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const { data: vehicles, isLoading } = useQuery<Vehicle[]>({
@@ -83,16 +84,16 @@ export default function Compare() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <GitCompareArrows className="w-5 h-5" /> Sammenlign Modeller
+          <GitCompareArrows className="w-5 h-5" /> {t("compare.title")}
         </h1>
-        <p className="text-sm text-muted-foreground">Vælg 2-5 biler til side-om-side sammenligning</p>
+        <p className="text-sm text-muted-foreground">{t("compare.subtitle")}</p>
       </div>
 
       <Card className="p-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Select onValueChange={addVehicle}>
             <SelectTrigger className="w-[250px]" data-testid="select-add-vehicle">
-              <SelectValue placeholder="Tilføj bil til sammenligning..." />
+              <SelectValue placeholder={t("compare.add_vehicle")} />
             </SelectTrigger>
             <SelectContent>
               {available.map(v => (
@@ -102,7 +103,7 @@ export default function Compare() {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">{selectedIds.length}/5 valgt</span>
+          <span className="text-xs text-muted-foreground">{selectedIds.length}/5 {t("compare.selected")}</span>
         </div>
         {selectedIds.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -123,7 +124,7 @@ export default function Compare() {
           <table className="w-full text-sm" data-testid="table-comparison">
             <thead>
               <tr className="border-b">
-                <th className="py-3 px-3 text-left text-xs text-muted-foreground font-medium">Egenskab</th>
+                <th className="py-3 px-3 text-left text-xs text-muted-foreground font-medium">{t("compare.property")}</th>
                 {selected.map(v => (
                   <th key={v.id} className="py-3 px-2 text-center min-w-[140px]">
                     <div className="space-y-1">
@@ -136,35 +137,35 @@ export default function Compare() {
               </tr>
             </thead>
             <tbody>
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Biloplysninger</td></tr>
-              <ComparisonRow label="Årgang" values={selected.map(v => v.year)} format="number" highlight="max" />
-              <ComparisonRow label="Kilometer" values={selected.map(v => v.mileageKm)} format="number" highlight="min" />
-              <ComparisonRow label="Motoreffekt (hk)" values={selected.map(v => v.enginePower || null)} format="number" highlight="max" />
-              <ComparisonRow label="CO2 (g/km)" values={selected.map(v => v.co2 || null)} format="number" highlight="min" />
-              <ComparisonRow label="Brændstof" values={selected.map(v => v.fuelType === "petrol" ? "Benzin" : v.fuelType === "electric" ? "El" : v.fuelType || "-")} format="text" />
-              <ComparisonRow label="Gearkasse" values={selected.map(v => v.gearbox === "automatic" ? "Automatisk" : v.gearbox === "manual" ? "Manuel" : v.gearbox || "-")} format="text" />
-              <ComparisonRow label="Kildeland" values={selected.map(v => v.sourceCountry || "-")} format="text" />
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.vehicle_info")}</td></tr>
+              <ComparisonRow label={t("common.year")} values={selected.map(v => v.year)} format="number" highlight="max" />
+              <ComparisonRow label={t("common.mileage")} values={selected.map(v => v.mileageKm)} format="number" highlight="min" />
+              <ComparisonRow label={t("compare.engine_power")} values={selected.map(v => v.enginePower || null)} format="number" highlight="max" />
+              <ComparisonRow label={t("compare.co2")} values={selected.map(v => v.co2 || null)} format="number" highlight="min" />
+              <ComparisonRow label={t("compare.fuel")} values={selected.map(v => v.fuelType === "petrol" ? t("fuel.petrol") : v.fuelType === "electric" ? t("fuel.electric") : v.fuelType || "-")} format="text" />
+              <ComparisonRow label={t("compare.gearbox")} values={selected.map(v => v.gearbox === "automatic" ? t("gearbox.automatic") : v.gearbox === "manual" ? t("gearbox.manual") : v.gearbox || "-")} format="text" />
+              <ComparisonRow label={t("compare.source_country")} values={selected.map(v => v.sourceCountry || "-")} format="text" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Økonomi</td></tr>
-              <ComparisonRow label="Indkøbspris" values={selected.map(v => v.purchasePrice || 0)} format="currency" highlight="min" />
-              <ComparisonRow label="Registreringsafgift" values={selected.map(v => v.registrationTax || 0)} format="currency" highlight="min" />
-              <ComparisonRow label="Totale Omkostninger" values={selected.map(v => calcTotalCost(v))} format="currency" highlight="min" />
-              <ComparisonRow label="Est. Salgspris (Normal)" values={selected.map(v => v.resaleNormal || 0)} format="currency" highlight="max" />
-              <ComparisonRow label="Fortjeneste (Normal)" values={selected.map(v => calcProfit(v, "normal"))} format="currency" highlight="max" />
-              <ComparisonRow label="ROI (%)" values={selected.map(v => calcROI(v, "normal"))} format="percent" highlight="max" />
-              <ComparisonRow label="MaxBud" values={selected.map(v => calcMaxBid(v))} format="currency" highlight="max" />
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.economy")}</td></tr>
+              <ComparisonRow label={t("compare.purchase_price")} values={selected.map(v => v.purchasePrice || 0)} format="currency" highlight="min" />
+              <ComparisonRow label={t("compare.reg_tax")} values={selected.map(v => v.registrationTax || 0)} format="currency" highlight="min" />
+              <ComparisonRow label={t("compare.total_costs")} values={selected.map(v => calcTotalCost(v))} format="currency" highlight="min" />
+              <ComparisonRow label={t("compare.est_sale_normal")} values={selected.map(v => v.resaleNormal || 0)} format="currency" highlight="max" />
+              <ComparisonRow label={t("compare.profit_normal")} values={selected.map(v => calcProfit(v, "normal"))} format="currency" highlight="max" />
+              <ComparisonRow label={t("compare.roi")} values={selected.map(v => calcROI(v, "normal"))} format="percent" highlight="max" />
+              <ComparisonRow label={t("compare.max_bid")} values={selected.map(v => calcMaxBid(v))} format="currency" highlight="max" />
               <ComparisonRow label="Deal Score" values={selected.map(v => v.dealScore || 0)} format="number" highlight="max" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Risikovurdering</td></tr>
-              <ComparisonRow label="Momstype" values={selected.map(v => v.vatType === "unknown" ? "Ukendt" : v.vatType || "Ukendt")} format="text" />
-              <ComparisonRow label="Risikoflag" values={selected.map(v => {
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.risk_assessment")}</td></tr>
+              <ComparisonRow label={t("compare.vat_type")} values={selected.map(v => v.vatType === "unknown" ? t("common.unknown") : v.vatType || t("common.unknown"))} format="text" />
+              <ComparisonRow label={t("compare.risk_flags")} values={selected.map(v => {
                 const flags = getRiskFlags(v);
-                return flags.length > 0 ? flags.join(", ") : "Ingen";
+                return flags.length > 0 ? flags.join(", ") : t("common.none");
               })} format="text" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Anbefaling</td></tr>
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.recommendation")}</td></tr>
               <tr className="border-b">
-                <td className="py-2 pr-3 text-xs text-muted-foreground font-medium">Vurdering</td>
+                <td className="py-2 pr-3 text-xs text-muted-foreground font-medium">{t("compare.assessment")}</td>
                 {selected.map(v => (
                   <td key={v.id} className="py-2 px-2 text-center">
                     <DealRecommendationBadge score={v.dealScore || 0} />
@@ -177,9 +178,9 @@ export default function Compare() {
       ) : (
         <Card className="p-8 text-center">
           <GitCompareArrows className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-sm font-semibold mb-1">Vælg mindst 2 biler</h3>
+          <h3 className="text-sm font-semibold mb-1">{t("compare.select_min_2")}</h3>
           <p className="text-xs text-muted-foreground">
-            Brug dropdown ovenfor til at tilføje biler til sammenligning. Du kan sammenligne op til 5 biler side om side.
+            {t("compare.select_hint")}
           </p>
         </Card>
       )}

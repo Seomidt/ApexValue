@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags, getDealRecommendation } from "@/lib/calculations";
 import {
   GitBranch, TrendingUp, BarChart3, Flame, AlertTriangle,
@@ -39,6 +39,7 @@ function KPICard({ title, value, subtitle, icon: Icon, accent }: {
 }
 
 function VehicleSearchCard({ v }: { v: Vehicle }) {
+  const { t } = useLanguage();
   const profit = calcProfit(v, "normal");
   const score = v.dealScore || 0;
   const placeholderImg = `https://placehold.co/400x240/1a2332/B9D9EB?text=${encodeURIComponent(v.make + ' ' + v.model)}`;
@@ -53,7 +54,7 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
             {v.make} {v.model} {v.year}
           </h3>
           <div className="flex-shrink-0 bg-[#FF6319] text-white px-2 py-1 rounded-md text-center">
-            <p className="text-[10px] font-medium leading-none">Deal Score</p>
+            <p className="text-[10px] font-medium leading-none">{t("dashboard.deal_score")}</p>
             <p className="text-lg font-bold leading-tight tabular-nums">{score}</p>
           </div>
         </div>
@@ -69,7 +70,7 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
           {country && (
             <span className="flex items-center gap-0.5">
               <MapPin className="w-3 h-3" />
-              {country.name} - {v.sourceType === "auction" ? "auktion" : "portal"}
+              {country.name} - {v.sourceType === "auction" ? t("dashboard.auction").toLowerCase() : t("dashboard.portal").toLowerCase()}
             </span>
           )}
         </div>
@@ -81,7 +82,7 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
           </div>
           <Link href={`/vehicle/${v.id}`}>
             <Button size="sm" variant="outline" data-testid={`button-details-${v.id}`}>
-              Se Detaljer <ArrowRight className="w-3 h-3 ml-1" />
+              {t("dashboard.see_details")} <ArrowRight className="w-3 h-3 ml-1" />
             </Button>
           </Link>
         </div>
@@ -91,6 +92,7 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
 }
 
 function ProfitCalculator({ vehicles }: { vehicles: Vehicle[] }) {
+  const { t } = useLanguage();
   const [selectedId, setSelectedId] = useState<string>("");
   const selected = vehicles.find(v => v.id === parseInt(selectedId));
 
@@ -103,11 +105,11 @@ function ProfitCalculator({ vehicles }: { vehicles: Vehicle[] }) {
   return (
     <Card className="p-4" data-testid="card-profit-calculator">
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-        <Calculator className="w-4 h-4" /> Profit Beregner
+        <Calculator className="w-4 h-4" /> {t("dashboard.profit_calculator")}
       </h3>
       <Select value={selectedId} onValueChange={setSelectedId}>
         <SelectTrigger className="mb-3" data-testid="select-calc-vehicle">
-          <SelectValue placeholder="Vælg bil..." />
+          <SelectValue placeholder={t("dashboard.select_vehicle")} />
         </SelectTrigger>
         <SelectContent>
           {vehicles.slice(0, 20).map(v => (
@@ -121,37 +123,37 @@ function ProfitCalculator({ vehicles }: { vehicles: Vehicle[] }) {
       {selected ? (
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Indkøbspris:</span>
+            <span className="text-muted-foreground">{t("dashboard.purchase_price")}:</span>
             <span className="font-semibold tabular-nums">{formatCurrency(purchaseTotal, selected.purchaseCurrency)} {selected.purchaseCurrency}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Afgift:</span>
+            <span className="text-muted-foreground">{t("dashboard.tax")}:</span>
             <span className="font-semibold tabular-nums">{formatCurrency(regTax, "DKK")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Transport:</span>
+            <span className="text-muted-foreground">{t("dashboard.transport")}:</span>
             <span className="font-semibold tabular-nums">{formatCurrency(transport, "DKK")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Omkostninger:</span>
+            <span className="text-muted-foreground">{t("dashboard.costs")}:</span>
             <span className="font-semibold tabular-nums">{formatCurrency(costs, "DKK")}</span>
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Forventet Fortjeneste:</span>
+            <span className="text-muted-foreground">{t("dashboard.expected_profit")}:</span>
             <span className={`font-bold tabular-nums ${profit >= 0 ? "text-[#FF6319]" : "text-red-500"}`}>
               {formatCurrency(profit, "DKK")}
             </span>
           </div>
           <Link href={`/vehicle/${selected.id}`}>
             <Button className="w-full mt-2 bg-[#FF6319] hover:bg-[#FF6319]/90 text-white" data-testid="button-calc-details">
-              Beregn Profit
+              {t("dashboard.calculate_profit")}
             </Button>
           </Link>
         </div>
       ) : (
         <p className="text-xs text-muted-foreground text-center py-4">
-          Vælg en bil for at beregne fortjeneste
+          {t("dashboard.select_vehicle_calc")}
         </p>
       )}
     </Card>
@@ -159,15 +161,16 @@ function ProfitCalculator({ vehicles }: { vehicles: Vehicle[] }) {
 }
 
 function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
+  const { t } = useLanguage();
   const watchlistVehicles = vehicles.filter(v =>
     v.status === "evaluating" || v.status === "bid_placed" || v.status === "found"
   ).slice(0, 8);
 
   const statusLabels: Record<string, string> = {
-    found: "Fundet",
-    evaluating: "Under vurdering",
-    bid_placed: "Bud afgivet",
-    won: "Vundet",
+    found: t("status.found"),
+    evaluating: t("status.evaluating"),
+    bid_placed: t("status.bid_placed"),
+    won: t("status.won"),
   };
 
   const statusBadgeClass: Record<string, string> = {
@@ -180,10 +183,10 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
   return (
     <Card className="p-4" data-testid="card-watchlist">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <h3 className="text-sm font-semibold">Overvågningsliste</h3>
+        <h3 className="text-sm font-semibold">{t("dashboard.watchlist")}</h3>
         <Link href="/auction-finder">
           <Button size="sm" variant="outline" className="text-[#FF6319] border-[#FF6319]/30" data-testid="button-view-all-watchlist">
-            Vis Alle <ArrowRight className="w-3 h-3 ml-1" />
+            {t("common.view_all")} <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </Link>
       </div>
@@ -192,10 +195,10 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground border-b">
-                <th className="pb-2 font-medium">Bil</th>
-                <th className="pb-2 font-medium">Lokation</th>
-                <th className="pb-2 font-medium text-right">Pris</th>
-                <th className="pb-2 font-medium">Status</th>
+                <th className="pb-2 font-medium">{t("dashboard.car")}</th>
+                <th className="pb-2 font-medium">{t("dashboard.location")}</th>
+                <th className="pb-2 font-medium text-right">{t("common.price")}</th>
+                <th className="pb-2 font-medium">{t("common.status")}</th>
                 <th className="pb-2 font-medium"></th>
               </tr>
             </thead>
@@ -206,7 +209,7 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
                   <td className="py-2 font-medium">
                     {v.make} {v.model} {v.variant ? v.variant.split(' ')[0] : ''}
                   </td>
-                  <td className="py-2 text-muted-foreground">{v.sourceType === "auction" ? "Auktion" : "Portal"}</td>
+                  <td className="py-2 text-muted-foreground">{v.sourceType === "auction" ? t("dashboard.auction") : t("dashboard.portal")}</td>
                   <td className="py-2 text-right font-semibold tabular-nums">
                     {formatCurrency(v.purchasePrice || 0, v.purchaseCurrency)}
                   </td>
@@ -228,13 +231,14 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
           </table>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground text-center py-4">Ingen biler i overvågningslisten</p>
+        <p className="text-sm text-muted-foreground text-center py-4">{t("dashboard.no_watchlist")}</p>
       )}
     </Card>
   );
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [makeFilter, setMakeFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
@@ -306,27 +310,27 @@ export default function Dashboard() {
     <div className="p-4 sm:p-6 space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <KPICard
-          title="Aktuelle Leads"
+          title={t("dashboard.current_leads")}
           value={String(pipelineVehicles.length)}
-          subtitle={`${allVehicles.length} biler i alt`}
+          subtitle={`${allVehicles.length} ${t("dashboard.total_vehicles")}`}
           icon={Car}
         />
         <KPICard
-          title="DK Salgspris (Est.)"
+          title={t("dashboard.dk_sale_price")}
           value={formatCurrency(totalResaleEstimate, "DKK")}
-          subtitle="samlet pipeline estimat"
+          subtitle={t("dashboard.pipeline_estimate")}
           icon={TrendingUp}
         />
         <KPICard
-          title="Forventet Afgift"
+          title={t("dashboard.expected_tax")}
           value={formatCurrency(totalRegistrationTax, "DKK")}
-          subtitle="samlet registreringsafgift"
+          subtitle={t("dashboard.total_reg_tax")}
           icon={BarChart3}
         />
         <KPICard
-          title="Potentiel Fortjeneste"
+          title={t("dashboard.potential_profit")}
           value={formatCurrency(totalPotentialProfit, "DKK")}
-          subtitle="på tværs af pipeline"
+          subtitle={t("dashboard.across_pipeline")}
           icon={Flame}
           accent
         />
@@ -336,16 +340,16 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-4">
           <div>
             <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <Search className="w-4 h-4" /> Find Bil
+              <Search className="w-4 h-4" /> {t("dashboard.find_car")}
             </h2>
             <Card className="p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={makeFilter} onValueChange={setMakeFilter}>
                   <SelectTrigger className="w-[130px]" data-testid="select-make-filter">
-                    <SelectValue placeholder="Mærke" />
+                    <SelectValue placeholder={t("common.year")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle mærker</SelectItem>
+                    <SelectItem value="all">{t("dashboard.all_makes")}</SelectItem>
                     {uniqueMakes.map(m => (
                       <SelectItem key={m} value={m}>{m}</SelectItem>
                     ))}
@@ -353,10 +357,10 @@ export default function Dashboard() {
                 </Select>
                 <Select value={yearFilter} onValueChange={setYearFilter}>
                   <SelectTrigger className="w-[120px]" data-testid="select-year-filter">
-                    <SelectValue placeholder="Årgang" />
+                    <SelectValue placeholder={t("common.year")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle år</SelectItem>
+                    <SelectItem value="all">{t("dashboard.all_years")}</SelectItem>
                     <SelectItem value="2023">2023+</SelectItem>
                     <SelectItem value="2022">2022+</SelectItem>
                     <SelectItem value="2021">2021+</SelectItem>
@@ -366,18 +370,18 @@ export default function Dashboard() {
                 </Select>
                 <Select value={priceFilter} onValueChange={setPriceFilter}>
                   <SelectTrigger className="w-[120px]" data-testid="select-price-filter">
-                    <SelectValue placeholder="Pris" />
+                    <SelectValue placeholder={t("common.price")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle priser</SelectItem>
-                    <SelectItem value="20000">Maks 20.000</SelectItem>
-                    <SelectItem value="30000">Maks 30.000</SelectItem>
-                    <SelectItem value="40000">Maks 40.000</SelectItem>
-                    <SelectItem value="50000">Maks 50.000</SelectItem>
+                    <SelectItem value="all">{t("dashboard.all_prices")}</SelectItem>
+                    <SelectItem value="20000">{t("dashboard.max")} 20.000</SelectItem>
+                    <SelectItem value="30000">{t("dashboard.max")} 30.000</SelectItem>
+                    <SelectItem value="40000">{t("dashboard.max")} 40.000</SelectItem>
+                    <SelectItem value="50000">{t("dashboard.max")} 50.000</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button className="bg-[#FF6319] hover:bg-[#FF6319]/90 text-white" data-testid="button-search">
-                  <Search className="w-4 h-4 mr-1" /> Søg
+                  <Search className="w-4 h-4 mr-1" /> {t("common.search")}
                 </Button>
               </div>
             </Card>
@@ -393,7 +397,7 @@ export default function Dashboard() {
             <div className="text-center">
               <Link href="/auction-finder">
                 <Button variant="outline" data-testid="button-view-all-vehicles">
-                  Vis alle {filteredVehicles.length} biler <ArrowRight className="w-4 h-4 ml-1" />
+                  {t("dashboard.view_all_vehicles").replace("{count}", String(filteredVehicles.length))} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
@@ -405,7 +409,7 @@ export default function Dashboard() {
 
           <Card className="p-4" data-testid="card-hot-deals">
             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Flame className="w-4 h-4 text-[#FF6319]" /> Hot Deals
+              <Flame className="w-4 h-4 text-[#FF6319]" /> {t("dashboard.hot_deals")}
             </h3>
             {hotDeals.slice(0, 5).map(v => {
               const profit = calcProfit(v, "normal");
@@ -432,21 +436,21 @@ export default function Dashboard() {
       <WatchlistTable vehicles={allVehicles} />
 
       <Card className="p-4">
-        <h2 className="text-sm font-semibold mb-3">Hurtige Handlinger</h2>
+        <h2 className="text-sm font-semibold mb-3">{t("dashboard.quick_actions")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Link href="/auction-finder">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-new-vehicle">
-              <Plus className="w-4 h-4 mr-2" /> Tilføj Ny Bil
+              <Plus className="w-4 h-4 mr-2" /> {t("dashboard.add_new_car")}
             </Button>
           </Link>
           <Link href="/pipeline">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-pipeline">
-              <GitBranch className="w-4 h-4 mr-2" /> Se Pipeline
+              <GitBranch className="w-4 h-4 mr-2" /> {t("dashboard.view_pipeline")}
             </Button>
           </Link>
           <Link href="/reports">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-pdf">
-              <FileText className="w-4 h-4 mr-2" /> Generér PDF Rapport
+              <FileText className="w-4 h-4 mr-2" /> {t("dashboard.generate_pdf")}
             </Button>
           </Link>
         </div>

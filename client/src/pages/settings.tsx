@@ -17,13 +17,13 @@ import { MARKET_COUNTRIES } from "@shared/schema";
 import { useLanguage, LANGUAGE_LABELS, type SupportedLanguage } from "@/lib/i18n";
 
 const CONNECTORS = [
-  { name: "mobile.de API", desc: "Markedssammenligninger og bilsøgning fra Tysklands største markedsplads", key: "MOBILE_DE", category: "market" },
-  { name: "AutoScout24 API", desc: "Pan-europæiske bilannoncering og markedsdata", key: "AUTOSCOUT24", category: "market" },
-  { name: "BCA Auctions", desc: "Europæisk engros-auktionsplatform", key: "BCA", category: "auction" },
-  { name: "Auto1 / wkda", desc: "Europæisk bilindkøb og remarketing", key: "AUTO1", category: "auction" },
-  { name: "ASG Digital", desc: "Registreringsafgift beregning (SKAT integration)", key: "ASG", category: "tax" },
-  { name: "DMR API", desc: "Motorregistret - biloplysninger", key: "DMR", category: "tax" },
-  { name: "Bilinfo", desc: "Annoncedistribution til dansk marked (bilbasen.dk)", key: "BILINFO", category: "listing" },
+  { name: "mobile.de API", descKey: "settings.connector_mobile_desc", key: "MOBILE_DE", category: "market" },
+  { name: "AutoScout24 API", descKey: "settings.connector_autoscout_desc", key: "AUTOSCOUT24", category: "market" },
+  { name: "BCA Auctions", descKey: "settings.connector_bca_desc", key: "BCA", category: "auction" },
+  { name: "Auto1 / wkda", descKey: "settings.connector_auto1_desc", key: "AUTO1", category: "auction" },
+  { name: "ASG Digital", descKey: "settings.connector_asg_desc", key: "ASG", category: "tax" },
+  { name: "DMR API", descKey: "settings.connector_dmr_desc", key: "DMR", category: "tax" },
+  { name: "Bilinfo", descKey: "settings.connector_bilinfo_desc", key: "BILINFO", category: "listing" },
 ];
 
 type TestResult = { success: boolean; message: string; status?: number } | null;
@@ -37,6 +37,7 @@ function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTes
   onTest: (key: string) => void;
 }) {
   const { mode } = useAppMode();
+  const { t } = useLanguage();
   const isDemo = mode === "demo";
 
   return (
@@ -44,16 +45,16 @@ function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTes
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium">{connector.name}</p>
-          <p className="text-xs text-muted-foreground">{connector.desc}</p>
+          <p className="text-xs text-muted-foreground">{t(connector.descKey)}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isConfigured ? (
             <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-              <CheckCircle2 className="w-3 h-3 mr-1" /> Tilsluttet
+              <CheckCircle2 className="w-3 h-3 mr-1" /> {t("settings.connected")}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-xs">
-              <XCircle className="w-3 h-3 mr-1" /> Ikke konfigureret
+              <XCircle className="w-3 h-3 mr-1" /> {t("settings.not_configured")}
             </Badge>
           )}
           {isConfigured && (
@@ -65,9 +66,9 @@ function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTes
               data-testid={`button-test-${connector.key}`}
             >
               {isTesting ? (
-                <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Tester...</>
+                <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> {t("settings.testing")}</>
               ) : (
-                <><Zap className="w-3.5 h-3.5 mr-1" /> Test Forbindelse</>
+                <><Zap className="w-3.5 h-3.5 mr-1" /> {t("settings.test_connection")}</>
               )}
             </Button>
           )}
@@ -77,7 +78,7 @@ function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTes
             onClick={() => onConfigure(connector.key)}
             data-testid={`button-configure-${connector.key}`}
           >
-            Konfigurér
+            {t("common.configure")}
           </Button>
         </div>
       </div>
@@ -106,12 +107,13 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<TestResult>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const connector = CONNECTORS.find(c => c.key === connectorKey);
 
   const handleTest = async () => {
     if (!apiKey) {
-      toast({ title: "Manglende nøgle", description: "Indtast en API-nøgle først.", variant: "destructive" });
+      toast({ title: t("settings.missing_key"), description: t("settings.enter_key_first"), variant: "destructive" });
       return;
     }
     setIsTesting(true);
@@ -121,7 +123,7 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
       const data = await res.json();
       setTestResult(data);
     } catch {
-      setTestResult({ success: false, message: "Netværksfejl — kunne ikke kontakte serveren." });
+      setTestResult({ success: false, message: t("settings.network_error") });
     } finally {
       setIsTesting(false);
     }
@@ -131,19 +133,19 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
     <Card className="p-4 space-y-3 border-primary/30">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold flex items-center gap-2">
-          <Key className="w-4 h-4" /> Konfigurér {connector?.name}
+          <Key className="w-4 h-4" /> {t("common.configure")} {connector?.name}
         </h4>
-        <Button size="sm" variant="ghost" onClick={onClose} data-testid="button-cancel-dialog">Annullér</Button>
+        <Button size="sm" variant="ghost" onClick={onClose} data-testid="button-cancel-dialog">{t("common.cancel")}</Button>
       </div>
       <div className="space-y-2">
         <div>
-          <Label className="text-xs">API Nøgle</Label>
+          <Label className="text-xs">{t("settings.api_key")}</Label>
           <div className="relative">
             <Input
               type={showKey ? "text" : "password"}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Indtast API nøgle..."
+              placeholder={t("settings.enter_key")}
               data-testid={`input-api-key-${connectorKey}`}
             />
             <Button
@@ -158,12 +160,12 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
           </div>
         </div>
         <div>
-          <Label className="text-xs">API Hemmelighed (valgfrit)</Label>
+          <Label className="text-xs">{t("settings.api_secret")}</Label>
           <Input
             type="password"
             value={apiSecret}
             onChange={(e) => setApiSecret(e.target.value)}
-            placeholder="Indtast API hemmelighed..."
+            placeholder={t("settings.enter_secret")}
             data-testid={`input-api-secret-${connectorKey}`}
           />
         </div>
@@ -186,7 +188,7 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="w-3.5 h-3.5" />
-        <span>Nøgler gemmes lokalt i denne session. Aktivér Live Mode for permanent lagring.</span>
+        <span>{t("settings.keys_local")}</span>
       </div>
       <div className="flex gap-2 flex-wrap">
         <Button
@@ -197,9 +199,9 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
           data-testid={`button-test-dialog-${connectorKey}`}
         >
           {isTesting ? (
-            <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Tester...</>
+            <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> {t("settings.testing")}</>
           ) : (
-            <><Zap className="w-3.5 h-3.5 mr-1" /> Test Forbindelse</>
+            <><Zap className="w-3.5 h-3.5 mr-1" /> {t("settings.test_connection")}</>
           )}
         </Button>
         <Button
@@ -207,14 +209,14 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
           disabled={!apiKey}
           onClick={() => {
             onSave(connectorKey, apiKey, apiSecret);
-            toast({ title: "API Nøgle gemt", description: `${connector?.name} legitimationsoplysninger er gemt.` });
+            toast({ title: t("settings.key_saved"), description: t("settings.key_saved_desc").replace("{name}", connector?.name || "") });
             onClose();
           }}
           data-testid={`button-save-key-${connectorKey}`}
         >
-          Gem Legitimationsoplysninger
+          {t("settings.save_credentials")}
         </Button>
-        <Button size="sm" variant="outline" onClick={onClose} data-testid="button-cancel-save">Annullér</Button>
+        <Button size="sm" variant="outline" onClick={onClose} data-testid="button-cancel-save">{t("common.cancel")}</Button>
       </div>
     </Card>
   );
@@ -224,6 +226,7 @@ export default function Settings() {
   const { user } = useAuth();
   const { mode } = useAppMode();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [configuring, setConfiguring] = useState<string | null>(null);
   const [configuredKeys, setConfiguredKeys] = useState<Set<string>>(new Set());
   const [savedCredentials, setSavedCredentials] = useState<Record<string, { apiKey: string; apiSecret: string }>>({});
@@ -240,7 +243,7 @@ export default function Settings() {
     localStorage.setItem("apexvalue_market", marketCountry);
     setGlobalLanguage(selectedLanguage as SupportedLanguage);
     setOrgDirty(false);
-    toast({ title: "Indstillinger gemt", description: "Dine organisationsindstillinger er blevet gemt." });
+    toast({ title: t("settings.saved"), description: t("settings.saved_desc") });
   };
 
   const handleSaveKey = (key: string, apiKey: string, apiSecret: string) => {
@@ -252,7 +255,7 @@ export default function Settings() {
   const handleTestFromCard = async (connectorKey: string) => {
     const creds = savedCredentials[connectorKey];
     if (!creds?.apiKey) {
-      toast({ title: "Ingen nøgle gemt", description: "Konfigurér API-nøglen først.", variant: "destructive" });
+      toast({ title: t("settings.no_key"), description: t("settings.configure_first"), variant: "destructive" });
       return;
     }
     setTestingKeys(prev => { const next = new Set(Array.from(prev)); next.add(connectorKey); return next; });
@@ -266,7 +269,7 @@ export default function Settings() {
       const data = await res.json();
       setTestResults(prev => ({ ...prev, [connectorKey]: data }));
     } catch {
-      setTestResults(prev => ({ ...prev, [connectorKey]: { success: false, message: "Netværksfejl — kunne ikke kontakte serveren." } }));
+      setTestResults(prev => ({ ...prev, [connectorKey]: { success: false, message: t("settings.network_error") } }));
     } finally {
       setTestingKeys(prev => { const next = new Set(prev); next.delete(connectorKey); return next; });
     }
@@ -276,41 +279,41 @@ export default function Settings() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <SettingsIcon className="w-5 h-5" /> Indstillinger
+          <SettingsIcon className="w-5 h-5" /> {t("settings.title")}
         </h1>
-        <p className="text-sm text-muted-foreground">Administrer din profil, organisation og integrationer</p>
+        <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-3">
         <TabsList className="flex-wrap">
           <TabsTrigger value="profile" data-testid="tab-profile">
-            <User className="w-3.5 h-3.5 mr-1" /> Profil
+            <User className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_profile")}
           </TabsTrigger>
           <TabsTrigger value="organization" data-testid="tab-organization">
-            <Building2 className="w-3.5 h-3.5 mr-1" /> Organisation
+            <Building2 className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_organization")}
           </TabsTrigger>
           <TabsTrigger value="integrations" data-testid="tab-integrations">
-            <Key className="w-3.5 h-3.5 mr-1" /> Integrationer
+            <Key className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_integrations")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
           <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Profil</h3>
+            <h3 className="text-sm font-semibold">{t("settings.profile")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Navn</Label>
+                <Label className="text-xs">{t("common.name")}</Label>
                 <Input value={user?.firstName || ""} readOnly data-testid="input-profile-name" />
               </div>
               <div>
-                <Label className="text-xs">E-mail</Label>
+                <Label className="text-xs">{t("common.email")}</Label>
                 <Input value={user?.email || ""} readOnly data-testid="input-profile-email" />
               </div>
             </div>
             <div>
-              <Label className="text-xs">Rolle</Label>
+              <Label className="text-xs">{t("common.role")}</Label>
               <div className="mt-1">
-                <Badge variant="secondary">Demo Bruger</Badge>
+                <Badge variant="secondary">{t("settings.demo_user")}</Badge>
               </div>
             </div>
           </Card>
@@ -318,22 +321,22 @@ export default function Settings() {
 
         <TabsContent value="organization">
           <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Organisation</h3>
+            <h3 className="text-sm font-semibold">{t("settings.tab_organization")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Organisationsnavn</Label>
+                <Label className="text-xs">{t("settings.org_name")}</Label>
                 <Input value="Demo Organisation" readOnly data-testid="input-org-name" />
               </div>
               <div>
-                <Label className="text-xs">Plan</Label>
+                <Label className="text-xs">{t("settings.plan")}</Label>
                 <div className="mt-1">
-                  <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">Gratis (Demo)</Badge>
+                  <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">{t("settings.free_demo")}</Badge>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Markedsland</Label>
+                <Label className="text-xs">{t("settings.market_country")}</Label>
                 <Select value={marketCountry} onValueChange={(v) => { setMarketCountry(v); setOrgDirty(true); }}>
                   <SelectTrigger data-testid="select-market-country">
                     <SelectValue />
@@ -348,7 +351,7 @@ export default function Settings() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Sprog</Label>
+                <Label className="text-xs">{t("settings.language")}</Label>
                 <Select value={selectedLanguage} onValueChange={(v) => { setSelectedLanguage(v); setOrgDirty(true); }}>
                   <SelectTrigger data-testid="select-language">
                     <SelectValue />
@@ -364,16 +367,16 @@ export default function Settings() {
             <Separator />
             <div>
               <h4 className="text-xs font-medium mb-2 flex items-center gap-2">
-                <Users className="w-3.5 h-3.5" /> Teammedlemmer
+                <Users className="w-3.5 h-3.5" /> {t("settings.team_members")}
               </h4>
               <p className="text-xs text-muted-foreground">
-                Teamstyring er tilgængelig på Pro og Team planer. Opgrader for at invitere teammedlemmer.
+                {t("settings.team_hint")}
               </p>
             </div>
             <Separator />
             <div className="flex justify-end">
               <Button onClick={handleSaveOrgSettings} disabled={!orgDirty} data-testid="button-save-org-settings">
-                <Save className="w-3.5 h-3.5 mr-1.5" /> Gem indstillinger
+                <Save className="w-3.5 h-3.5 mr-1.5" /> {t("settings.save_settings")}
               </Button>
             </div>
           </Card>
@@ -382,14 +385,13 @@ export default function Settings() {
         <TabsContent value="integrations">
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">API Integrationer (BYOK)</h3>
+              <h3 className="text-sm font-semibold">{t("settings.api_integrations")}</h3>
               <Badge variant="outline" className={`text-xs ${mode === "live" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : ""}`}>
-                {mode === "demo" ? "Demo Mode" : "Live Mode"}
+                {mode === "demo" ? `${t("mode.demo")} Mode` : `${t("mode.live")} Mode`}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Bring Your Own Keys (BYOK): Indtast dine API-legitimationsoplysninger for at aktivere live data.
-              Test forbindelsen inden du gemmer for at sikre, at dine nøgler virker korrekt.
+              {t("settings.byok_desc")}
             </p>
             <Separator />
 
@@ -398,7 +400,7 @@ export default function Settings() {
             )}
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Markedsdata</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("settings.market_data")}</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "market").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
@@ -407,7 +409,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Auktionsplatforme</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("settings.auction_platforms")}</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "auction").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
@@ -416,7 +418,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Skat & Registrering</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("settings.tax_reg")}</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "tax").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
@@ -425,7 +427,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Annoncering & Distribution</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("settings.listing_dist")}</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "listing").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
@@ -435,7 +437,7 @@ export default function Settings() {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Globe className="w-3.5 h-3.5" />
-              <span>Opgrader til Pro eller Team plan for at aktivere Live Mode med dine egne API-nøgler.</span>
+              <span>{t("settings.upgrade_hint")}</span>
             </div>
           </Card>
         </TabsContent>

@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DealScoreBadge } from "@/components/deal-score-badge";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcProfit, calcROI } from "@/lib/calculations";
 import { VEHICLE_STATUSES } from "@shared/schema";
 import { ArrowRight, Car, GitBranch, ChevronRight, Check, Camera, List, FileText, Receipt, CreditCard, Tag } from "lucide-react";
@@ -13,18 +13,6 @@ import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Vehicle } from "@shared/schema";
-
-const statusLabels: Record<string, string> = {
-  found: "Fundet",
-  evaluating: "Under vurdering",
-  bid_placed: "Bud afgivet",
-  won: "Vundet",
-  transport: "Transport",
-  preparation: "Klargøring",
-  ready_for_sale: "Klar til salg",
-  online: "Online",
-  sold: "Solgt",
-};
 
 const statusColors: Record<string, string> = {
   found: "bg-muted text-muted-foreground",
@@ -39,16 +27,17 @@ const statusColors: Record<string, string> = {
 };
 
 function ReadyChecklist({ v }: { v: Vehicle }) {
+  const { t } = useLanguage();
   const hasImages = v.imageUrls && v.imageUrls.length >= 3;
   const hasTax = v.registrationTax != null && v.registrationTax > 0;
   const hasResale = v.resaleNormal != null && v.resaleNormal > 0;
   const hasVat = v.vatType !== "unknown";
 
   const checks = [
-    { label: "Billeder (min 3)", ok: hasImages, icon: Camera },
-    { label: "Afgift beregnet", ok: hasTax, icon: Receipt },
-    { label: "Moms/VAT afklaret", ok: hasVat, icon: CreditCard },
-    { label: "Salgspris sat", ok: hasResale, icon: Tag },
+    { label: t("pipeline.checklist.images"), ok: hasImages, icon: Camera },
+    { label: t("pipeline.checklist.tax"), ok: hasTax, icon: Receipt },
+    { label: t("pipeline.checklist.vat"), ok: hasVat, icon: CreditCard },
+    { label: t("pipeline.checklist.price"), ok: hasResale, icon: Tag },
   ];
 
   return (
@@ -66,10 +55,23 @@ function ReadyChecklist({ v }: { v: Vehicle }) {
 }
 
 export default function Pipeline() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const { data: vehicles, isLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
   });
+
+  const statusLabels: Record<string, string> = {
+    found: t("status.found"),
+    evaluating: t("status.evaluating"),
+    bid_placed: t("status.bid_placed"),
+    won: t("status.won"),
+    transport: t("status.transport"),
+    preparation: t("status.preparation"),
+    ready_for_sale: t("status.ready_for_sale"),
+    online: t("status.online"),
+    sold: t("status.sold"),
+  };
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
@@ -78,10 +80,10 @@ export default function Pipeline() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-      toast({ title: "Status opdateret", description: "Bilens status er blevet ændret." });
+      toast({ title: t("pipeline.status_updated"), description: t("pipeline.status_changed") });
     },
     onError: () => {
-      toast({ title: "Fejl", description: "Kunne ikke opdatere status.", variant: "destructive" });
+      toast({ title: t("pipeline.error"), description: t("pipeline.error_update"), variant: "destructive" });
     },
   });
 
@@ -113,7 +115,7 @@ export default function Pipeline() {
           <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
             <GitBranch className="w-5 h-5" /> Pipeline
           </h1>
-          <p className="text-sm text-muted-foreground">{activeCount} aktive biler &middot; {formatCurrency(totalProfit, "DKK")} potentiel fortjeneste</p>
+          <p className="text-sm text-muted-foreground">{activeCount} {t("pipeline.active_vehicles")} &middot; {formatCurrency(totalProfit, "DKK")} {t("pipeline.potential_profit")}</p>
         </div>
       </div>
 
@@ -142,7 +144,7 @@ export default function Pipeline() {
               <Badge variant="outline" className={`${statusColors[status]}`}>
                 {statusLabels[status]}
               </Badge>
-              <span className="text-muted-foreground text-xs">{items.length} biler</span>
+              <span className="text-muted-foreground text-xs">{items.length} {t("common.vehicles")}</span>
             </h2>
             <div className="space-y-2">
               {items.map((v) => {
@@ -208,10 +210,10 @@ export default function Pipeline() {
       {allVehicles.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Car className="w-12 h-12 text-muted-foreground mb-3" />
-          <h3 className="text-lg font-semibold">Ingen biler i pipeline</h3>
-          <p className="text-sm text-muted-foreground mt-1">Tilføj biler fra Auktionssøgeren</p>
+          <h3 className="text-lg font-semibold">{t("pipeline.no_vehicles")}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{t("pipeline.add_from_finder")}</p>
           <Link href="/auction-finder">
-            <Button className="mt-4">Gennemse Biler</Button>
+            <Button className="mt-4">{t("pipeline.browse_vehicles")}</Button>
           </Link>
         </div>
       )}

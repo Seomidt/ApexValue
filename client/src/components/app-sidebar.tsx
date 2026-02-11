@@ -58,7 +58,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -76,7 +76,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.system")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {user?.isAdmin && (

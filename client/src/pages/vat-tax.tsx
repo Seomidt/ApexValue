@@ -6,87 +6,89 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Receipt, Info, AlertTriangle } from "lucide-react";
 import { MARKET_COUNTRIES } from "@shared/schema";
+import { useLanguage } from "@/lib/i18n";
 
 const vatTemplates = [
   {
     id: "eu_reverse_charge",
-    name: "EU Reverse Charge",
-    description: "Køb fra EU-forhandler med momsnummer. Ingen moms ved køb, opkræv 25% DK moms ved videresalg.",
+    nameKey: "vat.tmpl.eu_reverse_charge.name",
+    descKey: "vat.tmpl.eu_reverse_charge.desc",
     countries: ["DE", "NL", "BE", "FR", "SE", "PL"],
-    vatOnPurchase: "0%",
-    vatOnResale: "25%",
-    vatReturn: "N/A (ingen købsmoms)",
-    capitalBinding: "Lav - ingen momsbinding",
+    purchaseKey: "vat.tmpl.eu_reverse_charge.purchase",
+    resaleKey: "vat.tmpl.eu_reverse_charge.resale",
+    returnKey: "vat.tmpl.eu_reverse_charge.return",
+    bindingKey: "vat.tmpl.eu_reverse_charge.binding",
   },
   {
     id: "dk_vat",
-    name: "DK Moms (25%)",
-    description: "Standard dansk moms. 25% moms ved køb, fradragsberettiget mod 25% moms ved videresalg.",
+    nameKey: "vat.tmpl.dk_vat.name",
+    descKey: "vat.tmpl.dk_vat.desc",
     countries: ["DK"],
-    vatOnPurchase: "25%",
-    vatOnResale: "25%",
-    vatReturn: "Købsmoms fradragsberettiget",
-    capitalBinding: "Middel - momsrefusion ved kvartalsafregning",
+    purchaseKey: "vat.tmpl.dk_vat.purchase",
+    resaleKey: "vat.tmpl.dk_vat.resale",
+    returnKey: "vat.tmpl.dk_vat.return",
+    bindingKey: "vat.tmpl.dk_vat.binding",
   },
   {
     id: "margin",
-    name: "Brugtmoms",
-    description: "Brugtmomsordning. Moms beregnes kun af avancen, ikke af den fulde salgspris.",
+    nameKey: "vat.tmpl.margin.name",
+    descKey: "vat.tmpl.margin.desc",
     countries: ["DK", "DE", "NL", "FR", "BE"],
-    vatOnPurchase: "Inkluderet i prisen",
-    vatOnResale: "25% af avancen",
-    vatReturn: "N/A",
-    capitalBinding: "Lav",
+    purchaseKey: "vat.tmpl.margin.purchase",
+    resaleKey: "vat.tmpl.margin.resale",
+    returnKey: "vat.tmpl.margin.return",
+    bindingKey: "vat.tmpl.margin.binding",
   },
   {
     id: "no_vat",
-    name: "Norge MVA (25%)",
-    description: "Norsk merverdiavgift. Import fra EU kræver toll- og MVA-beregning ved grænsen.",
+    nameKey: "vat.tmpl.no_vat.name",
+    descKey: "vat.tmpl.no_vat.desc",
     countries: ["NO"],
-    vatOnPurchase: "25% MVA + evt. toll",
-    vatOnResale: "25% MVA",
-    vatReturn: "MVA fradragsberettiget for næringsdrivende",
-    capitalBinding: "Høj - MVA betales ved import",
+    purchaseKey: "vat.tmpl.no_vat.purchase",
+    resaleKey: "vat.tmpl.no_vat.resale",
+    returnKey: "vat.tmpl.no_vat.return",
+    bindingKey: "vat.tmpl.no_vat.binding",
   },
   {
     id: "se_vat",
-    name: "Sverige Moms (25%)",
-    description: "Svensk moms på bilhandel. EU-intern handel med reverse charge for registrerede virksomheder.",
+    nameKey: "vat.tmpl.se_vat.name",
+    descKey: "vat.tmpl.se_vat.desc",
     countries: ["SE"],
-    vatOnPurchase: "25% (eller 0% ved reverse charge)",
-    vatOnResale: "25%",
-    vatReturn: "Fradragsberettiget for momsregistrerede",
-    capitalBinding: "Middel",
+    purchaseKey: "vat.tmpl.se_vat.purchase",
+    resaleKey: "vat.tmpl.se_vat.resale",
+    returnKey: "vat.tmpl.se_vat.return",
+    bindingKey: "vat.tmpl.se_vat.binding",
   },
   {
     id: "private",
-    name: "Privat Salg",
-    description: "Køb fra privat sælger. Ingen moms opkrævet eller fradragsberettiget.",
+    nameKey: "vat.tmpl.private.name",
+    descKey: "vat.tmpl.private.desc",
     countries: ["DK", "DE", "NL", "BE", "FR", "SE", "NO", "PL"],
-    vatOnPurchase: "0%",
-    vatOnResale: "Brugtmoms kan anvendes",
-    vatReturn: "N/A",
-    capitalBinding: "Ingen",
+    purchaseKey: "vat.tmpl.private.purchase",
+    resaleKey: "vat.tmpl.private.resale",
+    returnKey: "vat.tmpl.private.return",
+    bindingKey: "vat.tmpl.private.binding",
   },
 ];
 
-const registrationTax: Record<string, { label: string; rate: string; detail: string }> = {
-  DK: { label: "Danmark", rate: "85-150%", detail: "Progressiv afgift baseret på bilens værdi. Fradrag for sikkerhedsudstyr og brændstofeffektivitet. Elbiler har nedsat sats." },
-  DE: { label: "Tyskland", rate: "~0%", detail: "Ingen registreringsafgift. Kun CO2-baseret kfz-steuer (årlig vægtafgift)." },
-  NL: { label: "Holland", rate: "BPM (CO2)", detail: "BPM er CO2-baseret. Kan være meget høj for dieselbiler. Elbiler er fritaget." },
-  NO: { label: "Norge", rate: "Vægt+CO2+NOx", detail: "Engangsafgift baseret på vægt, CO2 og NOx-udslip. Elbiler er fritaget." },
-  SE: { label: "Sverige", rate: "Lav", detail: "Ingen registreringsafgift som sådan. Bonus-malus system baseret på CO2." },
-  FR: { label: "Frankrig", rate: "CO2-baseret", detail: "Écotaxe baseret på CO2-udslip. Kan være betydelig for høj-CO2 biler." },
-  BE: { label: "Belgien", rate: "BIV (regional)", detail: "Belasting op inverkeerstelling varierer efter region (Flandern, Vallonien, Bruxelles)." },
-  PL: { label: "Polen", rate: "Akcyza 3.1-18.6%", detail: "Akcyza baseret på motorstørrelse. 3.1% for motorer under 2000cc, 18.6% for over." },
+const registrationTax: Record<string, { labelKey: string; rate: string; detailKey: string }> = {
+  DK: { labelKey: "vat.reg.dk.label", rate: "85-150%", detailKey: "vat.reg.dk.detail" },
+  DE: { labelKey: "vat.reg.de.label", rate: "~0%", detailKey: "vat.reg.de.detail" },
+  NL: { labelKey: "vat.reg.nl.label", rate: "BPM (CO2)", detailKey: "vat.reg.nl.detail" },
+  NO: { labelKey: "vat.reg.no.label", rate: "Vægt+CO2+NOx", detailKey: "vat.reg.no.detail" },
+  SE: { labelKey: "vat.reg.se.label", rate: "Lav", detailKey: "vat.reg.se.detail" },
+  FR: { labelKey: "vat.reg.fr.label", rate: "CO2-baseret", detailKey: "vat.reg.fr.detail" },
+  BE: { labelKey: "vat.reg.be.label", rate: "BIV (regional)", detailKey: "vat.reg.be.detail" },
+  PL: { labelKey: "vat.reg.pl.label", rate: "Akcyza 3.1-18.6%", detailKey: "vat.reg.pl.detail" },
 };
 
 export default function VatTax() {
+  const { t } = useLanguage();
   const [countryFilter, setCountryFilter] = useState("all");
 
   const filteredTemplates = countryFilter === "all"
     ? vatTemplates
-    : vatTemplates.filter(t => t.countries.includes(countryFilter));
+    : vatTemplates.filter(tmpl => tmpl.countries.includes(countryFilter));
 
   const filteredRegTax = countryFilter === "all"
     ? Object.entries(registrationTax)
@@ -97,18 +99,18 @@ export default function VatTax() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-            <Receipt className="w-5 h-5" /> Moms & Afgiftscenter
+            <Receipt className="w-5 h-5" /> {t("vat.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Skabeloner og regler for de 8 største markeder</p>
+          <p className="text-sm text-muted-foreground">{t("vat.subtitle")}</p>
         </div>
         <div className="w-48">
-          <Label className="text-xs">Filtrer efter land</Label>
+          <Label className="text-xs">{t("vat.filter_country")}</Label>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
             <SelectTrigger data-testid="select-vat-country">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle lande</SelectItem>
+              <SelectItem value="all">{t("vat.all_countries")}</SelectItem>
               {MARKET_COUNTRIES.map(c => (
                 <SelectItem key={c.code} value={c.code}>{c.code} - {c.name}</SelectItem>
               ))}
@@ -120,17 +122,16 @@ export default function VatTax() {
       <Card className="p-3 flex items-start gap-2 border-amber-500/30 bg-amber-500/5">
         <Info className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
         <div className="text-sm">
-          <p className="font-medium text-amber-600 dark:text-amber-400">Vigtig Ansvarsfraskrivelse</p>
+          <p className="font-medium text-amber-600 dark:text-amber-400">{t("vat.disclaimer_title")}</p>
           <p className="text-muted-foreground text-xs mt-0.5">
-            Alle moms- og afgiftsberegninger er vejledende. Kontakt altid din revisor
-            eller den relevante skattemyndighed, inden du træffer købsbeslutninger. Reglerne varierer efter land og biltype.
+            {t("vat.disclaimer_text")}
           </p>
         </div>
       </Card>
 
       {filteredTemplates.length === 0 && (
         <Card className="p-4 text-center text-sm text-muted-foreground">
-          Ingen momsregler fundet for det valgte land.
+          {t("vat.no_rules")}
         </Card>
       )}
 
@@ -139,8 +140,8 @@ export default function VatTax() {
           <Card key={template.id} className="p-4" data-testid={`card-vat-${template.id}`}>
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <h3 className="font-semibold text-sm">{template.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
+                <h3 className="font-semibold text-sm">{t(template.nameKey)}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{t(template.descKey)}</p>
               </div>
               <div className="flex gap-1 flex-wrap">
                 {template.countries.map((c) => (
@@ -159,20 +160,20 @@ export default function VatTax() {
             <Separator className="my-3" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <p className="text-muted-foreground">Moms ved Køb</p>
-                <p className="font-semibold mt-0.5">{template.vatOnPurchase}</p>
+                <p className="text-muted-foreground">{t("vat.on_purchase")}</p>
+                <p className="font-semibold mt-0.5">{t(template.purchaseKey)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Moms ved Salg</p>
-                <p className="font-semibold mt-0.5">{template.vatOnResale}</p>
+                <p className="text-muted-foreground">{t("vat.on_resale")}</p>
+                <p className="font-semibold mt-0.5">{t(template.resaleKey)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Momsrefusion</p>
-                <p className="font-semibold mt-0.5">{template.vatReturn}</p>
+                <p className="text-muted-foreground">{t("vat.vat_return")}</p>
+                <p className="font-semibold mt-0.5">{t(template.returnKey)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Kapitalbinding</p>
-                <p className="font-semibold mt-0.5">{template.capitalBinding}</p>
+                <p className="text-muted-foreground">{t("vat.capital_binding")}</p>
+                <p className="font-semibold mt-0.5">{t(template.bindingKey)}</p>
               </div>
             </div>
           </Card>
@@ -181,19 +182,19 @@ export default function VatTax() {
 
       <Card className="p-4">
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-500" /> Registreringsafgift
+          <AlertTriangle className="w-4 h-4 text-amber-500" /> {t("vat.reg_tax_title")}
         </h3>
         <p className="text-sm text-muted-foreground mb-3">
-          Registreringsafgiften varierer betydeligt efter land og bilspecifikationer (CO2, værdi, alder).
+          {t("vat.reg_tax_description")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           {filteredRegTax.map(([code, info]) => (
             <div key={code} className="p-3 rounded-md border space-y-1" data-testid={`card-regtax-${code}`}>
               <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-sm">{info.label}</p>
+                <p className="font-semibold text-sm">{t(info.labelKey)}</p>
                 <Badge variant="outline" className="text-xs">{info.rate}</Badge>
               </div>
-              <p className="text-muted-foreground">{info.detail}</p>
+              <p className="text-muted-foreground">{t(info.detailKey)}</p>
             </div>
           ))}
         </div>
