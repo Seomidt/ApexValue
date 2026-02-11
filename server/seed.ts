@@ -13,7 +13,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 285000, resaleNormal: 319000,
     resaleOptimistic: 345000, dealScore: 78, riskFlags: [] as string[],
     status: "evaluating", notes: "Clean Carfax, full BMW service history. M Sport package with adaptive suspension.",
-    isDemo: true, imageUrls: [] as string[],
+    isDemo: true, imageUrls: ["/images/cars/bmw-530d.jpg"] as string[],
   },
   {
     orgId: 1, make: "Mercedes-Benz", model: "E220d", variant: "AMG Line", year: 2020,
@@ -25,7 +25,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 245000, resaleNormal: 275000,
     resaleOptimistic: 299000, dealScore: 72, riskFlags: ["High mileage"] as string[],
     status: "bid_placed", notes: "AMG Line with Night Package. Some paint correction needed on front bumper.",
-    isDemo: true, imageUrls: [] as string[],
+    isDemo: true, imageUrls: ["/images/cars/mercedes-e220d.jpg"] as string[],
   },
   {
     orgId: 1, make: "Audi", model: "A6", variant: "50 TDI quattro S-line", year: 2022,
@@ -36,7 +36,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 125000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 395000, resaleNormal: 435000,
     resaleOptimistic: 465000, dealScore: 82,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/audi-a6.jpg"] as string[],
     notes: "Very low mileage for year. Full Audi service. Bang & Olufsen sound, Matrix LED.",
   },
   {
@@ -48,7 +48,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 68000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 225000, resaleNormal: 259000,
     resaleOptimistic: 279000, dealScore: 75,
-    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: ["/images/cars/vw-tiguan.jpg"] as string[],
     notes: "R-Line with panoramic roof. Popular model in DK market.",
   },
   {
@@ -60,7 +60,7 @@ const demoVehicles = [
     otherCosts: 2000, registrationTax: 88000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 295000, resaleNormal: 329000,
     resaleOptimistic: 359000, dealScore: 76,
-    riskFlags: [] as string[], status: "transport", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "transport", isDemo: true, imageUrls: ["/images/cars/volvo-xc60.jpg"] as string[],
     notes: "Inscription trim with all safety features. Bowers & Wilkins audio.",
   },
   {
@@ -73,7 +73,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 695000, resaleNormal: 749000,
     resaleOptimistic: 795000, dealScore: 55,
     riskFlags: ["High capital binding"] as string[], status: "evaluating", isDemo: true,
-    imageUrls: [] as string[],
+    imageUrls: ["/images/cars/porsche-cayenne.jpg"] as string[],
     notes: "High-value unit. Sport Chrono, PASM, 21-inch wheels. Full Porsche service.",
   },
   {
@@ -85,7 +85,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 82000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 345000, resaleNormal: 379000,
     resaleOptimistic: 399000, dealScore: 85,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/bmw-x3.jpg"] as string[],
     notes: "Top scorer. Low km, popular color and spec. M Sport with Vernasca leather.",
   },
   {
@@ -97,7 +97,7 @@ const demoVehicles = [
     otherCosts: 2000, registrationTax: 98000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 365000, resaleNormal: 399000,
     resaleOptimistic: 429000, dealScore: 71,
-    riskFlags: [] as string[], status: "preparation", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "preparation", isDemo: true, imageUrls: ["/images/cars/mercedes-glc.jpg"] as string[],
     notes: "AMG package, Burmester sound, 360 camera. Ready after paint touch-up.",
   },
   {
@@ -109,7 +109,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 22000, vatType: "margin" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 155000, resaleNormal: 175000,
     resaleOptimistic: 189000, dealScore: 88,
-    riskFlags: [] as string[], status: "ready_for_sale", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "ready_for_sale", isDemo: true, imageUrls: ["/images/cars/skoda-octavia.jpg"] as string[],
     notes: "Excellent budget option. High ROI. Very popular in DK. Clean car.",
   },
   {
@@ -121,7 +121,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 245000, resaleNormal: 269000,
     resaleOptimistic: 289000, dealScore: 90,
-    riskFlags: [] as string[], status: "online", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "online", isDemo: true, imageUrls: ["/images/cars/tesla-model3.jpg"] as string[],
     notes: "Zero registration tax for EVs. Highest deal score in demo. Full autopilot.",
   },
   {
@@ -134,7 +134,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 145000, resaleNormal: 165000,
     resaleOptimistic: 179000, dealScore: 35,
     riskFlags: ["High mileage", "Unknown VAT type"] as string[], status: "evaluating", isDemo: true,
-    imageUrls: [] as string[],
+    imageUrls: ["/images/cars/peugeot-3008.jpg"] as string[],
     notes: "High km but priced accordingly. VAT status needs verification. GT trim popular.",
   },
   {
@@ -147,7 +147,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 495000, resaleNormal: 545000,
     resaleOptimistic: 589000, dealScore: 42,
     riskFlags: ["High mileage", "High capital binding"] as string[], status: "found", isDemo: true,
-    imageUrls: [] as string[],
+    imageUrls: ["/images/cars/range-rover-sport.jpg"] as string[],
     notes: "High risk, high reward. Known for expensive repairs. Full service required.",
   },
   {
@@ -159,7 +159,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 92000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 355000, resaleNormal: 389000,
     resaleOptimistic: 415000, dealScore: 80,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/audi-q5.jpg"] as string[],
     notes: "Low km Q5 S-line. Virtual cockpit, Matrix LED. Strong resale in DK.",
   },
   {
@@ -171,7 +171,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 28000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 265000, resaleNormal: 295000,
     resaleOptimistic: 319000, dealScore: 84,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/toyota-rav4.jpg"] as string[],
     notes: "Low registration tax due to hybrid. Very reliable. Strong demand.",
   },
   {
@@ -183,7 +183,7 @@ const demoVehicles = [
     otherCosts: 3000, registrationTax: 72000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 225000, resaleNormal: 255000,
     resaleOptimistic: 279000, dealScore: 58,
-    riskFlags: ["High mileage"] as string[], status: "sold", isDemo: true, imageUrls: [] as string[],
+    riskFlags: ["High mileage"] as string[], status: "sold", isDemo: true, imageUrls: ["/images/cars/bmw-520d-touring.jpg"] as string[],
     notes: "Sold for 262,000 DKK. Good profit despite high km. Touring very popular.",
   },
   {
@@ -195,7 +195,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 55000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 195000, resaleNormal: 219000,
     resaleOptimistic: 239000, dealScore: 79,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/vw-golf-gtd.jpg"] as string[],
     notes: "GTD is popular daily driver. Good power with low tax. Virtual cockpit, ACC.",
   },
   {
@@ -207,7 +207,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 105000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 375000, resaleNormal: 415000,
     resaleOptimistic: 445000, dealScore: 83,
-    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: ["/images/cars/mercedes-c300d.jpg"] as string[],
     notes: "New W206. Very low km, AMG Line, Digital Light. Strong demand in DK.",
   },
   {
@@ -219,7 +219,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 72000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 249000, resaleNormal: 279000,
     resaleOptimistic: 299000, dealScore: 73,
-    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: ["/images/cars/audi-a4-avant.jpg"] as string[],
     notes: "Avant/stationcar very popular in DK. S-line with Virtual Cockpit, B&O.",
   },
   {
@@ -231,7 +231,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 285000, resaleNormal: 315000,
     resaleOptimistic: 339000, dealScore: 92,
-    riskFlags: [] as string[], status: "transport", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "transport", isDemo: true, imageUrls: ["/images/cars/bmw-ix3.jpg"] as string[],
     notes: "Zero reg tax EV. Very strong resale. 461 km range. Impressive trim.",
   },
   {
@@ -243,7 +243,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 38000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 249000, resaleNormal: 275000,
     resaleOptimistic: 295000, dealScore: 81,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/hyundai-tucson.jpg"] as string[],
     notes: "New design Tucson hybrid. Low tax due to hybrid. Very popular model.",
   },
   {
@@ -255,7 +255,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 12000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 285000, resaleNormal: 315000,
     resaleOptimistic: 339000, dealScore: 87,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/volvo-xc40.jpg"] as string[],
     notes: "PHEV with very low reg tax. Popular in DK. Volvo safety. Low km.",
   },
   {
@@ -267,7 +267,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 18000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 345000, resaleNormal: 379000,
     resaleOptimistic: 405000, dealScore: 86,
-    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: ["/images/cars/bmw-330e.jpg"] as string[],
     notes: "PHEV Touring M Sport. Extremely low reg tax. Strong demand. Full spec.",
   },
   {
@@ -279,7 +279,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 35000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 139000, resaleNormal: 159000,
     resaleOptimistic: 175000, dealScore: 77,
-    riskFlags: [] as string[], status: "ready_for_sale", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "ready_for_sale", isDemo: true, imageUrls: ["/images/cars/seat-leon.jpg"] as string[],
     notes: "Budget-friendly FR trim. Manual gearbox limits DK demand slightly.",
   },
   {
@@ -291,7 +291,7 @@ const demoVehicles = [
     otherCosts: 3000, registrationTax: 175000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 545000, resaleNormal: 595000,
     resaleOptimistic: 635000, dealScore: 62,
-    riskFlags: ["High capital binding"] as string[], status: "bid_placed", isDemo: true, imageUrls: [] as string[],
+    riskFlags: ["High capital binding"] as string[], status: "bid_placed", isDemo: true, imageUrls: ["/images/cars/mercedes-gle.jpg"] as string[],
     notes: "Premium SUV. AMG Line, air suspension, Burmester 3D. High capital needed.",
   },
   {
@@ -303,7 +303,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 329000, resaleNormal: 365000,
     resaleOptimistic: 389000, dealScore: 91,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/kia-ev6.jpg"] as string[],
     notes: "Zero reg tax. Award-winning EV. 528 km range. Very strong demand.",
   },
   {
@@ -315,7 +315,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 305000, resaleNormal: 339000,
     resaleOptimistic: 365000, dealScore: 89,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/ford-mustang-mache.jpg"] as string[],
     notes: "Zero reg tax EV from Norway. Extended range. Popular crossover.",
   },
   {
@@ -327,7 +327,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 219000, resaleNormal: 249000,
     resaleOptimistic: 269000, dealScore: 86,
-    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "evaluating", isDemo: true, imageUrls: ["/images/cars/vw-id4.jpg"] as string[],
     notes: "Zero reg tax. VW reliability. 520 km range. Solid family EV choice.",
   },
   {
@@ -339,7 +339,7 @@ const demoVehicles = [
     otherCosts: 2000, registrationTax: 195000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 475000, resaleNormal: 525000,
     resaleOptimistic: 565000, dealScore: 60,
-    riskFlags: ["High capital binding"] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: ["High capital binding"] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/bmw-m340i.jpg"] as string[],
     notes: "Performance sedan. M Sport diff, Harman Kardon. High reg tax is the challenge.",
   },
   {
@@ -351,7 +351,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 32000, vatType: "margin" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 179000, resaleNormal: 205000,
     resaleOptimistic: 225000, dealScore: 83,
-    riskFlags: [] as string[], status: "preparation", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "preparation", isDemo: true, imageUrls: ["/images/cars/skoda-superb.jpg"] as string[],
     notes: "Great value. Combi/wagon popular in DK. Spacious and practical. From Poland.",
   },
   {
@@ -363,7 +363,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 325000, resaleNormal: 365000,
     resaleOptimistic: 395000, dealScore: 88,
-    riskFlags: [] as string[], status: "online", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "online", isDemo: true, imageUrls: ["/images/cars/audi-etron.jpg"] as string[],
     notes: "Zero reg tax. Premium EV SUV. S-line, air suspension, Bang & Olufsen.",
   },
   {
@@ -376,7 +376,7 @@ const demoVehicles = [
     vatAmount: 0, vatReturn: 0, resaleConservative: 79000, resaleNormal: 95000,
     resaleOptimistic: 109000, dealScore: 28,
     riskFlags: ["High mileage", "Unknown VAT type", "Old vehicle"] as string[], status: "found",
-    isDemo: true, imageUrls: [] as string[],
+    isDemo: true, imageUrls: ["/images/cars/renault-megane.jpg"] as string[],
     notes: "Very high km. Unknown VAT. Limited DK demand for Renault. Budget segment only.",
   },
   {
@@ -388,7 +388,7 @@ const demoVehicles = [
     otherCosts: 2000, registrationTax: 0, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 595000, resaleNormal: 649000,
     resaleOptimistic: 695000, dealScore: 72,
-    riskFlags: ["High capital binding"] as string[], status: "evaluating", isDemo: true, imageUrls: [] as string[],
+    riskFlags: ["High capital binding"] as string[], status: "evaluating", isDemo: true, imageUrls: ["/images/cars/porsche-taycan.jpg"] as string[],
     notes: "Zero reg tax. Ultra-premium EV. High capital but strong resale in DK luxury segment.",
   },
   {
@@ -400,7 +400,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 15000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 189000, resaleNormal: 215000,
     resaleOptimistic: 235000, dealScore: 85,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/toyota-corolla.jpg"] as string[],
     notes: "Very low reg tax hybrid. Toyota reliability. Touring/wagon popular in DK.",
   },
   {
@@ -412,7 +412,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 62000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 225000, resaleNormal: 255000,
     resaleOptimistic: 275000, dealScore: 76,
-    riskFlags: [] as string[], status: "bid_placed", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "bid_placed", isDemo: true, imageUrls: ["/images/cars/mazda-cx5.jpg"] as string[],
     notes: "Soul Red Crystal metallic paint is very desirable. AWD for DK winters.",
   },
   {
@@ -424,7 +424,7 @@ const demoVehicles = [
     otherCosts: 1500, registrationTax: 145000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 335000, resaleNormal: 369000,
     resaleOptimistic: 395000, dealScore: 52,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/cupra-formentor.jpg"] as string[],
     notes: "High-performance crossover. High reg tax due to petrol. Growing brand in DK.",
   },
   {
@@ -436,7 +436,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 15000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 269000, resaleNormal: 299000,
     resaleOptimistic: 319000, dealScore: 87,
-    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "won", isDemo: true, imageUrls: ["/images/cars/bmw-x1.jpg"] as string[],
     notes: "PHEV with minimal reg tax. Compact SUV very popular in DK. Low km.",
   },
   {
@@ -448,7 +448,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 10000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 229000, resaleNormal: 259000,
     resaleOptimistic: 279000, dealScore: 84,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/mercedes-a250e.jpg"] as string[],
     notes: "PHEV AMG Line. Very low reg tax. Compact but premium. Low km.",
   },
   {
@@ -460,7 +460,7 @@ const demoVehicles = [
     otherCosts: 1000, registrationTax: 52000, vatType: "eu_reverse_charge" as const,
     vatAmount: 0, vatReturn: 0, resaleConservative: 179000, resaleNormal: 205000,
     resaleOptimistic: 225000, dealScore: 70,
-    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: [] as string[],
+    riskFlags: [] as string[], status: "found", isDemo: true, imageUrls: ["/images/cars/nissan-qashqai.jpg"] as string[],
     notes: "New generation Qashqai. Tekna is top trim. Solid DK market presence.",
   },
 ];

@@ -14,7 +14,8 @@ interface VehicleImage { key: string; url: string | null; }
 function useVehicleThumbnail(vehicle: Vehicle): string {
   const placeholder = `https://placehold.co/400x250/1a2332/B9D9EB?text=${encodeURIComponent(vehicle.make + ' ' + vehicle.model)}`;
   const firstKey = vehicle.imageUrls && vehicle.imageUrls.length > 0 ? vehicle.imageUrls[0] : null;
-  const hasR2Key = firstKey && !firstKey.startsWith("http");
+  const isDirectUrl = firstKey && (firstKey.startsWith("http") || firstKey.startsWith("/"));
+  const hasR2Key = firstKey && !isDirectUrl;
 
   const { data: images } = useQuery<VehicleImage[]>({
     queryKey: ["/api/vehicles", String(vehicle.id), "images"],
@@ -23,7 +24,7 @@ function useVehicleThumbnail(vehicle: Vehicle): string {
   });
 
   if (!firstKey) return placeholder;
-  if (firstKey.startsWith("http")) return firstKey;
+  if (isDirectUrl) return firstKey;
   const found = images?.find(i => i.key === firstKey);
   return found?.url || placeholder;
 }

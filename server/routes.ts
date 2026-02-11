@@ -282,6 +282,9 @@ export async function registerRoutes(
       const keys = vehicle.imageUrls || [];
       const images = await Promise.all(
         keys.map(async (key) => {
+          if (key.startsWith("http") || key.startsWith("/")) {
+            return { key, url: key };
+          }
           try {
             const url = await getPresignedUrl(key);
             return { key, url };
