@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/i18n";
-import logoPath from "@assets/image_1770805863097.png";
+import logoPath from "@assets/image_1770840196054.png";
 
 const features = [
   { icon: Search, titleKey: "landing.feature_auction_title", descKey: "landing.feature_auction_desc" },
@@ -138,7 +138,7 @@ export default function Landing() {
 
       <footer className="border-t bg-card/30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-4 flex-wrap text-xs text-muted-foreground">
-          <img src={logoPath} alt="ApexValue" className="h-5 w-auto opacity-50" />
+          <img src={logoPath} alt="ApexValue" className="h-6 w-auto opacity-50" />
           <p>ApexValue &copy; {new Date().getFullYear()}</p>
         </div>
       </footer>

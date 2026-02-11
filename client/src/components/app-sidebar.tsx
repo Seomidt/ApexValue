@@ -14,7 +14,7 @@ import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import logoPath from "@assets/image_1770805863097.png";
+import logoPath from "@assets/image_1770840196054.png";
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -45,7 +45,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/" data-testid="link-logo">
           <div className="flex items-center gap-2">
-            <img src={logoPath} alt="ApexValue" className="h-8 w-auto" />
+            <img src={logoPath} alt="ApexValue" className="h-10 w-auto" />
           </div>
         </Link>
         <div className="mt-3 flex items-center gap-2">
