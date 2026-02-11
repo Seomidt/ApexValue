@@ -7,52 +7,10 @@ const translations: Record<string, Record<string, string>> = {
     "nav.cost_templates": "Cost Templates",
     "nav.settings": "Settings",
     "nav.reports": "Reports",
+    "nav.compare": "Compare",
+    "nav.admin": "Admin",
     "mode.demo": "Demo",
     "mode.live": "Live",
-    "dashboard.title": "Cockpit",
-    "dashboard.pipeline_count": "Pipeline",
-    "dashboard.potential_profit": "Potential Profit",
-    "dashboard.avg_roi": "Avg. ROI",
-    "dashboard.hot_deals": "Hot Deals",
-    "dashboard.risk_vehicles": "Risk Vehicles",
-    "dashboard.recent_activity": "Recent Activity",
-    "dashboard.quick_actions": "Quick Actions",
-    "vehicle.found": "Found",
-    "vehicle.evaluating": "Evaluating",
-    "vehicle.bid_placed": "Bid Placed",
-    "vehicle.won": "Won",
-    "vehicle.transport": "Transport",
-    "vehicle.preparation": "Preparation",
-    "vehicle.ready_for_sale": "Ready for Sale",
-    "vehicle.online": "Online",
-    "vehicle.sold": "Sold",
-    "vat.eu_reverse_charge": "EU Reverse Charge",
-    "vat.dk_vat": "DK VAT (25%)",
-    "vat.margin": "Margin Scheme",
-    "vat.private": "Private Sale",
-    "vat.unknown": "Unknown",
-    "score.buy": "BUY",
-    "score.consider": "CONSIDER",
-    "score.drop": "DROP",
-    "calc.total_cost": "Total Cost",
-    "calc.profit": "Profit",
-    "calc.roi": "ROI",
-    "calc.max_bid": "MaxBid",
-    "calc.break_even": "Break-even",
-    "calc.conservative": "Conservative",
-    "calc.normal": "Normal",
-    "calc.optimistic": "Optimistic",
-    "common.vehicles": "Vehicles",
-    "common.save": "Save",
-    "common.cancel": "Cancel",
-    "common.delete": "Delete",
-    "common.edit": "Edit",
-    "common.search": "Search",
-    "common.filter": "Filter",
-    "common.export": "Export",
-    "common.add_vehicle": "Add Vehicle",
-    "common.generate_pdf": "Generate PDF",
-    "common.view_details": "View Details",
   },
   da: {
     "nav.dashboard": "Dashboard",
@@ -62,59 +20,21 @@ const translations: Record<string, Record<string, string>> = {
     "nav.cost_templates": "Omkostningsskabeloner",
     "nav.settings": "Indstillinger",
     "nav.reports": "Rapporter",
+    "nav.compare": "Sammenlign",
+    "nav.admin": "Admin",
     "mode.demo": "Demo",
     "mode.live": "Live",
-    "dashboard.title": "Cockpit",
-    "dashboard.pipeline_count": "Pipeline",
-    "dashboard.potential_profit": "Potentiel Profit",
-    "dashboard.avg_roi": "Gns. ROI",
-    "dashboard.hot_deals": "Hot Deals",
-    "dashboard.risk_vehicles": "Risiko Biler",
-    "dashboard.recent_activity": "Seneste Aktivitet",
-    "dashboard.quick_actions": "Hurtige Handlinger",
-    "vehicle.found": "Fundet",
-    "vehicle.evaluating": "Under vurdering",
-    "vehicle.bid_placed": "Bud afgivet",
-    "vehicle.won": "Vundet",
-    "vehicle.transport": "Transport",
-    "vehicle.preparation": "Klargøring",
-    "vehicle.ready_for_sale": "Klar til salg",
-    "vehicle.online": "Online",
-    "vehicle.sold": "Solgt",
-    "vat.eu_reverse_charge": "EU Reverse Charge",
-    "vat.dk_vat": "DK Moms (25%)",
-    "vat.margin": "Brugtmoms",
-    "vat.private": "Privat salg",
-    "vat.unknown": "Ukendt",
-    "score.buy": "KØB",
-    "score.consider": "OVERVEJ",
-    "score.drop": "DROP",
-    "calc.total_cost": "Totale Omkostninger",
-    "calc.profit": "Profit",
-    "calc.roi": "ROI",
-    "calc.max_bid": "MaxBud",
-    "calc.break_even": "Break-even",
-    "calc.conservative": "Konservativ",
-    "calc.normal": "Normal",
-    "calc.optimistic": "Optimistisk",
-    "common.vehicles": "Biler",
-    "common.save": "Gem",
-    "common.cancel": "Annuller",
-    "common.delete": "Slet",
-    "common.edit": "Rediger",
-    "common.search": "Søg",
-    "common.filter": "Filter",
-    "common.export": "Eksporter",
-    "common.add_vehicle": "Tilføj Bil",
-    "common.generate_pdf": "Generér PDF",
-    "common.view_details": "Se Detaljer",
   },
 };
 
-let currentLang = "en";
+let currentLang = "da";
 
 export function setLanguage(lang: string) {
   currentLang = lang;
+}
+
+export function getLanguage(): string {
+  return currentLang;
 }
 
 export function t(key: string): string {
@@ -122,15 +42,11 @@ export function t(key: string): string {
 }
 
 export function formatCurrency(amount: number, currency: string = "DKK"): string {
-  const localeMap: Record<string, string> = {
-    DKK: "da-DK", EUR: "de-DE", PLN: "pl-PL",
-    SEK: "sv-SE", NOK: "nb-NO",
-  };
-  return new Intl.NumberFormat(localeMap[currency] || "en-US", {
+  return new Intl.NumberFormat("da-DK", {
     style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0,
   }).format(amount);
 }
 
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat(currentLang === "da" ? "da-DK" : "en-US").format(num);
+  return new Intl.NumberFormat("da-DK").format(num);
 }

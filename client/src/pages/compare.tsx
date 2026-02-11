@@ -83,16 +83,16 @@ export default function Compare() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <GitCompareArrows className="w-5 h-5" /> Compare Models
+          <GitCompareArrows className="w-5 h-5" /> Sammenlign Modeller
         </h1>
-        <p className="text-sm text-muted-foreground">Select 2-5 vehicles for side-by-side comparison</p>
+        <p className="text-sm text-muted-foreground">Vælg 2-5 biler til side-om-side sammenligning</p>
       </div>
 
       <Card className="p-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Select onValueChange={addVehicle}>
             <SelectTrigger className="w-[250px]" data-testid="select-add-vehicle">
-              <SelectValue placeholder="Add vehicle to compare..." />
+              <SelectValue placeholder="Tilføj bil til sammenligning..." />
             </SelectTrigger>
             <SelectContent>
               {available.map(v => (
@@ -102,14 +102,14 @@ export default function Compare() {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">{selectedIds.length}/5 selected</span>
+          <span className="text-xs text-muted-foreground">{selectedIds.length}/5 valgt</span>
         </div>
         {selectedIds.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {selected.map(v => (
               <Badge key={v.id} variant="outline" className="gap-1" data-testid={`badge-selected-${v.id}`}>
                 {v.make} {v.model}
-                <button onClick={() => removeVehicle(v.id)} className="ml-0.5">
+                <button onClick={() => removeVehicle(v.id)} className="ml-0.5" data-testid={`button-remove-${v.id}`}>
                   <X className="w-3 h-3" />
                 </button>
               </Badge>
@@ -123,7 +123,7 @@ export default function Compare() {
           <table className="w-full text-sm" data-testid="table-comparison">
             <thead>
               <tr className="border-b">
-                <th className="py-3 px-3 text-left text-xs text-muted-foreground font-medium">Attribute</th>
+                <th className="py-3 px-3 text-left text-xs text-muted-foreground font-medium">Egenskab</th>
                 {selected.map(v => (
                   <th key={v.id} className="py-3 px-2 text-center min-w-[140px]">
                     <div className="space-y-1">
@@ -136,35 +136,35 @@ export default function Compare() {
               </tr>
             </thead>
             <tbody>
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Vehicle Info</td></tr>
-              <ComparisonRow label="Year" values={selected.map(v => v.year)} format="number" highlight="max" />
-              <ComparisonRow label="Mileage (km)" values={selected.map(v => v.mileageKm)} format="number" highlight="min" />
-              <ComparisonRow label="Engine Power (hp)" values={selected.map(v => v.enginePower || null)} format="number" highlight="max" />
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Biloplysninger</td></tr>
+              <ComparisonRow label="Årgang" values={selected.map(v => v.year)} format="number" highlight="max" />
+              <ComparisonRow label="Kilometer" values={selected.map(v => v.mileageKm)} format="number" highlight="min" />
+              <ComparisonRow label="Motoreffekt (hk)" values={selected.map(v => v.enginePower || null)} format="number" highlight="max" />
               <ComparisonRow label="CO2 (g/km)" values={selected.map(v => v.co2 || null)} format="number" highlight="min" />
-              <ComparisonRow label="Fuel Type" values={selected.map(v => v.fuelType || "-")} format="text" />
-              <ComparisonRow label="Gearbox" values={selected.map(v => v.gearbox || "-")} format="text" />
-              <ComparisonRow label="Source Country" values={selected.map(v => v.sourceCountry || "-")} format="text" />
+              <ComparisonRow label="Brændstof" values={selected.map(v => v.fuelType === "petrol" ? "Benzin" : v.fuelType === "electric" ? "El" : v.fuelType || "-")} format="text" />
+              <ComparisonRow label="Gearkasse" values={selected.map(v => v.gearbox === "automatic" ? "Automatisk" : v.gearbox === "manual" ? "Manuel" : v.gearbox || "-")} format="text" />
+              <ComparisonRow label="Kildeland" values={selected.map(v => v.sourceCountry || "-")} format="text" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Financials</td></tr>
-              <ComparisonRow label="Purchase Price" values={selected.map(v => v.purchasePrice || 0)} format="currency" highlight="min" />
-              <ComparisonRow label="Registration Tax" values={selected.map(v => v.registrationTax || 0)} format="currency" highlight="min" />
-              <ComparisonRow label="Total Cost" values={selected.map(v => calcTotalCost(v))} format="currency" highlight="min" />
-              <ComparisonRow label="Est. Resale (Normal)" values={selected.map(v => v.resaleNormal || 0)} format="currency" highlight="max" />
-              <ComparisonRow label="Profit (Normal)" values={selected.map(v => calcProfit(v, "normal"))} format="currency" highlight="max" />
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Økonomi</td></tr>
+              <ComparisonRow label="Indkøbspris" values={selected.map(v => v.purchasePrice || 0)} format="currency" highlight="min" />
+              <ComparisonRow label="Registreringsafgift" values={selected.map(v => v.registrationTax || 0)} format="currency" highlight="min" />
+              <ComparisonRow label="Totale Omkostninger" values={selected.map(v => calcTotalCost(v))} format="currency" highlight="min" />
+              <ComparisonRow label="Est. Salgspris (Normal)" values={selected.map(v => v.resaleNormal || 0)} format="currency" highlight="max" />
+              <ComparisonRow label="Fortjeneste (Normal)" values={selected.map(v => calcProfit(v, "normal"))} format="currency" highlight="max" />
               <ComparisonRow label="ROI (%)" values={selected.map(v => calcROI(v, "normal"))} format="percent" highlight="max" />
-              <ComparisonRow label="MaxBid" values={selected.map(v => calcMaxBid(v))} format="currency" highlight="max" />
+              <ComparisonRow label="MaxBud" values={selected.map(v => calcMaxBid(v))} format="currency" highlight="max" />
               <ComparisonRow label="Deal Score" values={selected.map(v => v.dealScore || 0)} format="number" highlight="max" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Risk Assessment</td></tr>
-              <ComparisonRow label="VAT Type" values={selected.map(v => v.vatType || "unknown")} format="text" />
-              <ComparisonRow label="Risk Flags" values={selected.map(v => {
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Risikovurdering</td></tr>
+              <ComparisonRow label="Momstype" values={selected.map(v => v.vatType === "unknown" ? "Ukendt" : v.vatType || "Ukendt")} format="text" />
+              <ComparisonRow label="Risikoflag" values={selected.map(v => {
                 const flags = getRiskFlags(v);
-                return flags.length > 0 ? flags.join(", ") : "None";
+                return flags.length > 0 ? flags.join(", ") : "Ingen";
               })} format="text" />
 
-              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Recommendation</td></tr>
+              <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">Anbefaling</td></tr>
               <tr className="border-b">
-                <td className="py-2 pr-3 text-xs text-muted-foreground font-medium">Verdict</td>
+                <td className="py-2 pr-3 text-xs text-muted-foreground font-medium">Vurdering</td>
                 {selected.map(v => (
                   <td key={v.id} className="py-2 px-2 text-center">
                     <DealRecommendationBadge score={v.dealScore || 0} />
@@ -177,9 +177,9 @@ export default function Compare() {
       ) : (
         <Card className="p-8 text-center">
           <GitCompareArrows className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-sm font-semibold mb-1">Select at least 2 vehicles</h3>
+          <h3 className="text-sm font-semibold mb-1">Vælg mindst 2 biler</h3>
           <p className="text-xs text-muted-foreground">
-            Use the dropdown above to add vehicles for comparison. You can compare up to 5 vehicles side by side.
+            Brug dropdown ovenfor til at tilføje biler til sammenligning. Du kan sammenligne op til 5 biler side om side.
           </p>
         </Card>
       )}

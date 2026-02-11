@@ -15,14 +15,14 @@ import { Settings as SettingsIcon, User, Building2, Users, Key, HardDrive, Globe
 import { MARKET_COUNTRIES } from "@shared/schema";
 
 const CONNECTORS = [
-  { name: "mobile.de API", desc: "Market comparisons and vehicle search from Germany's largest marketplace", key: "MOBILE_DE", category: "market" },
-  { name: "AutoScout24 API", desc: "Pan-European vehicle listings and market data", key: "AUTOSCOUT24", category: "market" },
-  { name: "BCA Auctions", desc: "European wholesale auction platform integration", key: "BCA", category: "auction" },
-  { name: "Auto1 / wkda", desc: "European vehicle purchasing and remarketing", key: "AUTO1", category: "auction" },
-  { name: "ASG Digital", desc: "Registration tax calculation (Denmark SKAT integration)", key: "ASG", category: "tax" },
-  { name: "DMR API", desc: "Danish Motor Registry (Motorregistret) vehicle lookup", key: "DMR", category: "tax" },
-  { name: "Bilinfo", desc: "Listing distribution to Danish market (bilbasen.dk)", key: "BILINFO", category: "listing" },
-  { name: "Cloudflare R2", desc: "Object storage for vehicle images and documents", key: "R2", category: "storage" },
+  { name: "mobile.de API", desc: "Markedssammenligninger og bilsøgning fra Tysklands største markedsplads", key: "MOBILE_DE", category: "market" },
+  { name: "AutoScout24 API", desc: "Pan-europæiske bilannoncering og markedsdata", key: "AUTOSCOUT24", category: "market" },
+  { name: "BCA Auctions", desc: "Europæisk engros-auktionsplatform", key: "BCA", category: "auction" },
+  { name: "Auto1 / wkda", desc: "Europæisk bilindkøb og remarketing", key: "AUTO1", category: "auction" },
+  { name: "ASG Digital", desc: "Registreringsafgift beregning (SKAT integration)", key: "ASG", category: "tax" },
+  { name: "DMR API", desc: "Motorregistret - biloplysninger", key: "DMR", category: "tax" },
+  { name: "Bilinfo", desc: "Annoncedistribution til dansk marked (bilbasen.dk)", key: "BILINFO", category: "listing" },
+  { name: "Cloudflare R2", desc: "Objekt-lagring til billeder og dokumenter", key: "R2", category: "storage" },
 ];
 
 function ConnectorCard({ connector, isConfigured, onConfigure }: {
@@ -42,11 +42,11 @@ function ConnectorCard({ connector, isConfigured, onConfigure }: {
       <div className="flex items-center gap-2 flex-shrink-0">
         {isConfigured ? (
           <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> Connected
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Tilsluttet
           </Badge>
         ) : (
           <Badge variant="outline" className="text-xs">
-            <XCircle className="w-3 h-3 mr-1" /> Not configured
+            <XCircle className="w-3 h-3 mr-1" /> Ikke konfigureret
           </Badge>
         )}
         <Button
@@ -56,7 +56,7 @@ function ConnectorCard({ connector, isConfigured, onConfigure }: {
           onClick={() => onConfigure(connector.key)}
           data-testid={`button-configure-${connector.key}`}
         >
-          Configure
+          Konfigurér
         </Button>
       </div>
     </div>
@@ -75,19 +75,19 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
     <Card className="p-4 space-y-3 border-primary/30">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold flex items-center gap-2">
-          <Key className="w-4 h-4" /> Configure {connector?.name}
+          <Key className="w-4 h-4" /> Konfigurér {connector?.name}
         </h4>
-        <Button size="sm" variant="ghost" onClick={onClose} data-testid="button-cancel-dialog">Cancel</Button>
+        <Button size="sm" variant="ghost" onClick={onClose} data-testid="button-cancel-dialog">Annullér</Button>
       </div>
       <div className="space-y-2">
         <div>
-          <Label className="text-xs">API Key</Label>
+          <Label className="text-xs">API Nøgle</Label>
           <div className="relative">
             <Input
               type={showKey ? "text" : "password"}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter API key..."
+              placeholder="Indtast API nøgle..."
               data-testid={`input-api-key-${connectorKey}`}
             />
             <Button
@@ -102,33 +102,33 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
           </div>
         </div>
         <div>
-          <Label className="text-xs">API Secret (optional)</Label>
+          <Label className="text-xs">API Hemmelighed (valgfrit)</Label>
           <Input
             type="password"
             value={apiSecret}
             onChange={(e) => setApiSecret(e.target.value)}
-            placeholder="Enter API secret..."
+            placeholder="Indtast API hemmelighed..."
             data-testid={`input-api-secret-${connectorKey}`}
           />
         </div>
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="w-3.5 h-3.5" />
-        <span>Keys are encrypted and stored securely per organization.</span>
+        <span>Nøgler krypteres og opbevares sikkert pr. organisation.</span>
       </div>
       <div className="flex gap-2">
         <Button
           size="sm"
           onClick={() => {
             onSave(connectorKey);
-            toast({ title: "API Key saved", description: `${connector?.name} credentials have been saved.` });
+            toast({ title: "API Nøgle gemt", description: `${connector?.name} legitimationsoplysninger er gemt.` });
             onClose();
           }}
           data-testid={`button-save-key-${connectorKey}`}
         >
-          Save Credentials
+          Gem Legitimationsoplysninger
         </Button>
-        <Button size="sm" variant="outline" onClick={onClose} data-testid="button-cancel-save">Cancel</Button>
+        <Button size="sm" variant="outline" onClick={onClose} data-testid="button-cancel-save">Annullér</Button>
       </div>
     </Card>
   );
@@ -148,44 +148,44 @@ export default function Settings() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
-          <SettingsIcon className="w-5 h-5" /> Settings
+          <SettingsIcon className="w-5 h-5" /> Indstillinger
         </h1>
-        <p className="text-sm text-muted-foreground">Manage your profile, organization and integrations</p>
+        <p className="text-sm text-muted-foreground">Administrer din profil, organisation og integrationer</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-3">
         <TabsList className="flex-wrap">
           <TabsTrigger value="profile" data-testid="tab-profile">
-            <User className="w-3.5 h-3.5 mr-1" /> Profile
+            <User className="w-3.5 h-3.5 mr-1" /> Profil
           </TabsTrigger>
           <TabsTrigger value="organization" data-testid="tab-organization">
-            <Building2 className="w-3.5 h-3.5 mr-1" /> Organization
+            <Building2 className="w-3.5 h-3.5 mr-1" /> Organisation
           </TabsTrigger>
           <TabsTrigger value="integrations" data-testid="tab-integrations">
-            <Key className="w-3.5 h-3.5 mr-1" /> Integrations
+            <Key className="w-3.5 h-3.5 mr-1" /> Integrationer
           </TabsTrigger>
           <TabsTrigger value="storage" data-testid="tab-storage">
-            <HardDrive className="w-3.5 h-3.5 mr-1" /> Storage
+            <HardDrive className="w-3.5 h-3.5 mr-1" /> Lagring
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
           <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Profile</h3>
+            <h3 className="text-sm font-semibold">Profil</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Name</Label>
+                <Label className="text-xs">Navn</Label>
                 <Input value={user?.firstName || ""} readOnly data-testid="input-profile-name" />
               </div>
               <div>
-                <Label className="text-xs">Email</Label>
+                <Label className="text-xs">E-mail</Label>
                 <Input value={user?.email || ""} readOnly data-testid="input-profile-email" />
               </div>
             </div>
             <div>
-              <Label className="text-xs">Role</Label>
+              <Label className="text-xs">Rolle</Label>
               <div className="mt-1">
-                <Badge variant="secondary">Demo User</Badge>
+                <Badge variant="secondary">Demo Bruger</Badge>
               </div>
             </div>
           </Card>
@@ -193,22 +193,22 @@ export default function Settings() {
 
         <TabsContent value="organization">
           <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Organization</h3>
+            <h3 className="text-sm font-semibold">Organisation</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Organization Name</Label>
-                <Input value="Demo Organization" readOnly data-testid="input-org-name" />
+                <Label className="text-xs">Organisationsnavn</Label>
+                <Input value="Demo Organisation" readOnly data-testid="input-org-name" />
               </div>
               <div>
                 <Label className="text-xs">Plan</Label>
                 <div className="mt-1">
-                  <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">Free (Demo)</Badge>
+                  <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">Gratis (Demo)</Badge>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Market Country</Label>
+                <Label className="text-xs">Markedsland</Label>
                 <Select defaultValue="DK">
                   <SelectTrigger data-testid="select-market-country">
                     <SelectValue />
@@ -223,14 +223,14 @@ export default function Settings() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Language</Label>
-                <Select defaultValue="en">
+                <Label className="text-xs">Sprog</Label>
+                <Select defaultValue="da">
                   <SelectTrigger data-testid="select-language">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="da">Dansk</SelectItem>
                     <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="da">Danish</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -238,10 +238,10 @@ export default function Settings() {
             <Separator />
             <div>
               <h4 className="text-xs font-medium mb-2 flex items-center gap-2">
-                <Users className="w-3.5 h-3.5" /> Team Members
+                <Users className="w-3.5 h-3.5" /> Teammedlemmer
               </h4>
               <p className="text-xs text-muted-foreground">
-                Team management is available on Pro and Team plans. Upgrade to invite team members.
+                Teamstyring er tilgængelig på Pro og Team planer. Opgrader for at invitere teammedlemmer.
               </p>
             </div>
           </Card>
@@ -250,15 +250,15 @@ export default function Settings() {
         <TabsContent value="integrations">
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">API Integrations (BYOK)</h3>
+              <h3 className="text-sm font-semibold">API Integrationer (BYOK)</h3>
               <Badge variant="outline" className={`text-xs ${mode === "live" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : ""}`}>
                 {mode === "demo" ? "Demo Mode" : "Live Mode"}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Bring Your Own Keys (BYOK): Enter your API credentials to enable live data.
-              Keys are encrypted and stored securely per organization.
-              {mode === "demo" && " Switch to Live Mode to configure integrations."}
+              Bring Your Own Keys (BYOK): Indtast dine API-legitimationsoplysninger for at aktivere live data.
+              Nøgler krypteres og opbevares sikkert pr. organisation.
+              {mode === "demo" && " Skift til Live Mode for at konfigurere integrationer."}
             </p>
             <Separator />
 
@@ -267,7 +267,7 @@ export default function Settings() {
             )}
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Market Data</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Markedsdata</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "market").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
@@ -276,7 +276,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Auction Platforms</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Auktionsplatforme</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "auction").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
@@ -285,7 +285,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tax & Registration</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Skat & Registrering</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "tax").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
@@ -294,7 +294,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Listing & Distribution</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Annoncering & Distribution</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "listing").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
@@ -303,7 +303,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Storage</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Lagring</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "storage").map(c => (
                   <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
@@ -313,18 +313,18 @@ export default function Settings() {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Globe className="w-3.5 h-3.5" />
-              <span>Upgrade to Pro or Team plan to enable Live Mode with your own API keys.</span>
+              <span>Opgrader til Pro eller Team plan for at aktivere Live Mode med dine egne API-nøgler.</span>
             </div>
           </Card>
         </TabsContent>
 
         <TabsContent value="storage">
           <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Storage Usage</h3>
+            <h3 className="text-sm font-semibold">Lagringsforbrug</h3>
             <div className="space-y-3">
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Storage Used</span>
+                  <span className="text-muted-foreground">Lagring Brugt</span>
                   <span className="font-semibold">0 MB / 500 MB</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -333,16 +333,16 @@ export default function Settings() {
               </div>
               <div className="grid grid-cols-3 gap-3 text-xs">
                 <div>
-                  <p className="text-muted-foreground">Images</p>
-                  <p className="font-semibold">0 files</p>
+                  <p className="text-muted-foreground">Billeder</p>
+                  <p className="font-semibold">0 filer</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Documents</p>
-                  <p className="font-semibold">0 files</p>
+                  <p className="text-muted-foreground">Dokumenter</p>
+                  <p className="font-semibold">0 filer</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Reports</p>
-                  <p className="font-semibold">0 PDFs</p>
+                  <p className="text-muted-foreground">Rapporter</p>
+                  <p className="font-semibold">0 PDF'er</p>
                 </div>
               </div>
             </div>

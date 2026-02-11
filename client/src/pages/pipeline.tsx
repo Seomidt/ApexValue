@@ -20,7 +20,7 @@ const statusLabels: Record<string, string> = {
   bid_placed: "Bud afgivet",
   won: "Vundet",
   transport: "Transport",
-  preparation: "Klargoering",
+  preparation: "Klargøring",
   ready_for_sale: "Klar til salg",
   online: "Online",
   sold: "Solgt",
@@ -78,10 +78,10 @@ export default function Pipeline() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-      toast({ title: "Status updated", description: "Vehicle status has been changed." });
+      toast({ title: "Status opdateret", description: "Bilens status er blevet ændret." });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to update status.", variant: "destructive" });
+      toast({ title: "Fejl", description: "Kunne ikke opdatere status.", variant: "destructive" });
     },
   });
 
@@ -113,7 +113,7 @@ export default function Pipeline() {
           <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
             <GitBranch className="w-5 h-5" /> Pipeline
           </h1>
-          <p className="text-sm text-muted-foreground">{activeCount} active vehicles &middot; {formatCurrency(totalProfit, "DKK")} potential profit</p>
+          <p className="text-sm text-muted-foreground">{activeCount} aktive biler &middot; {formatCurrency(totalProfit, "DKK")} potentiel fortjeneste</p>
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export default function Pipeline() {
               <Badge variant="outline" className={`${statusColors[status]}`}>
                 {statusLabels[status]}
               </Badge>
-              <span className="text-muted-foreground text-xs">{items.length} vehicles</span>
+              <span className="text-muted-foreground text-xs">{items.length} biler</span>
             </h2>
             <div className="space-y-2">
               {items.map((v) => {
@@ -208,10 +208,10 @@ export default function Pipeline() {
       {allVehicles.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Car className="w-12 h-12 text-muted-foreground mb-3" />
-          <h3 className="text-lg font-semibold">No vehicles in pipeline</h3>
-          <p className="text-sm text-muted-foreground mt-1">Add vehicles from the Auction Finder</p>
+          <h3 className="text-lg font-semibold">Ingen biler i pipeline</h3>
+          <p className="text-sm text-muted-foreground mt-1">Tilføj biler fra Auktionssøgeren</p>
           <Link href="/auction-finder">
-            <Button className="mt-4">Browse Vehicles</Button>
+            <Button className="mt-4">Gennemse Biler</Button>
           </Link>
         </div>
       )}

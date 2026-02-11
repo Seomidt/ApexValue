@@ -55,8 +55,8 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{v.year}</span>
                 <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{formatNumber(v.mileageKm)} km</span>
-                <span className="flex items-center gap-1"><Settings2 className="w-3 h-3" />{v.gearbox}</span>
-                <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{v.fuelType}</span>
+                <span className="flex items-center gap-1"><Settings2 className="w-3 h-3" />{v.gearbox === "automatic" ? "Automatisk" : "Manuel"}</span>
+                <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{v.fuelType === "petrol" ? "Benzin" : v.fuelType === "electric" ? "El" : v.fuelType === "hybrid" ? "Hybrid" : v.fuelType}</span>
               </div>
             </div>
             <DealRecommendationBadge score={score} />
@@ -64,15 +64,15 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div>
-              <span className="text-muted-foreground block">Purchase</span>
+              <span className="text-muted-foreground block">Indkøb</span>
               <span className="font-semibold" data-testid={`text-purchase-${v.id}`}>{formatCurrency(v.purchasePrice || 0, v.purchaseCurrency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Est. Resale</span>
+              <span className="text-muted-foreground block">Est. Salgspris</span>
               <span className="font-semibold">{formatCurrency(v.resaleNormal || 0, currency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Profit</span>
+              <span className="text-muted-foreground block">Fortjeneste</span>
               <span className={`font-semibold ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                 {formatCurrency(profit, currency)}
               </span>
@@ -87,11 +87,11 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="text-muted-foreground block">MaxBid</span>
+              <span className="text-muted-foreground block">MaxBud</span>
               <span className="font-semibold">{formatCurrency(maxBid, currency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Room to MaxBid</span>
+              <span className="text-muted-foreground block">Rum til MaxBud</span>
               <span className={`font-semibold ${maxBidRoom >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                 {formatCurrency(maxBidRoom, currency)}
               </span>
@@ -111,13 +111,13 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
           <div className="flex items-center gap-1 mt-auto pt-1">
             <Link href={`/vehicle/${v.id}`}>
               <Button size="sm" variant="ghost" data-testid={`button-view-${v.id}`}>
-                <Eye className="w-3.5 h-3.5 mr-1" /> Details
+                <Eye className="w-3.5 h-3.5 mr-1" /> Detaljer
               </Button>
             </Link>
             {v.sourceUrl && (
               <a href={v.sourceUrl} target="_blank" rel="noopener noreferrer">
                 <Button size="sm" variant="ghost">
-                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Source
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Kilde
                 </Button>
               </a>
             )}

@@ -80,14 +80,14 @@ export function getDealRecommendation(score: number): "buy" | "consider" | "drop
 
 export function getRiskFlags(v: Vehicle): string[] {
   const flags: string[] = [];
-  if (v.vatType === "unknown") flags.push("Unknown VAT type");
-  if (v.registrationTax === null || v.registrationTax === undefined) flags.push("Unknown registration tax");
-  if (v.mileageKm > 200000) flags.push("Very high mileage");
-  else if (v.mileageKm > 150000) flags.push("High mileage");
-  if (v.year && v.year < new Date().getFullYear() - 10) flags.push("Old vehicle");
+  if (v.vatType === "unknown") flags.push("Ukendt momstype");
+  if (v.registrationTax === null || v.registrationTax === undefined) flags.push("Ukendt registreringsafgift");
+  if (v.mileageKm > 200000) flags.push("Meget højt kilometertal");
+  else if (v.mileageKm > 150000) flags.push("Højt kilometertal");
+  if (v.year && v.year < new Date().getFullYear() - 10) flags.push("Ældre bil");
   const total = calcTotalCost(v);
-  if (total > 300000) flags.push("High capital binding");
+  if (total > 300000) flags.push("Høj kapitalbinding");
   const profit = calcProfit(v, "normal");
-  if (profit < 0) flags.push("Negative profit");
+  if (profit < 0) flags.push("Negativ fortjeneste");
   return flags;
 }

@@ -17,13 +17,13 @@ import { MARKET_COUNTRIES } from "@shared/schema";
 type SortOption = "score_desc" | "profit_desc" | "roi_desc" | "price_asc" | "price_desc" | "year_desc" | "km_asc";
 
 const sortLabels: Record<SortOption, string> = {
-  score_desc: "Deal Score (High-Low)",
-  profit_desc: "Profit (High-Low)",
-  roi_desc: "ROI (High-Low)",
-  price_asc: "Price (Low-High)",
-  price_desc: "Price (High-Low)",
-  year_desc: "Year (Newest)",
-  km_asc: "Mileage (Lowest)",
+  score_desc: "Deal Score (Højest)",
+  profit_desc: "Profit (Højest)",
+  roi_desc: "ROI (Højest)",
+  price_asc: "Pris (Lavest)",
+  price_desc: "Pris (Højest)",
+  year_desc: "Årgang (Nyest)",
+  km_asc: "Kilometer (Lavest)",
 };
 
 function sortVehicles(vehicles: Vehicle[], sort: SortOption): Vehicle[] {
@@ -130,9 +130,9 @@ export default function AuctionFinder() {
     <div className="p-4 sm:p-6 space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold" data-testid="text-page-title">Auction Finder</h1>
+          <h1 className="text-xl font-bold" data-testid="text-page-title">Auktionssøger</h1>
           <p className="text-sm text-muted-foreground">
-            {filtered.length} of {allVehicles.length} vehicles
+            {filtered.length} af {allVehicles.length} biler
             {hotDeals.length > 0 && <span className="text-[#FF6319]"> &middot; {hotDeals.length} hot deals</span>}
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function AuctionFinder() {
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search make, model, variant..."
+              placeholder="Søg mærke, model, variant..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8"
@@ -168,91 +168,91 @@ export default function AuctionFinder() {
             onClick={() => setShowFilters(!showFilters)}
             data-testid="button-toggle-filters"
           >
-            <SlidersHorizontal className="w-4 h-4 mr-1" /> Filters
+            <SlidersHorizontal className="w-4 h-4 mr-1" /> Filtre
           </Button>
           <Button variant="ghost" onClick={resetFilters} data-testid="button-reset-filters">
-            Reset
+            Nulstil
           </Button>
         </div>
 
         {showFilters && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mt-3 pt-3 border-t">
             <div>
-              <Label className="text-xs">Min Price (EUR)</Label>
+              <Label className="text-xs">Min. Pris (EUR)</Label>
               <Input
                 type="number"
-                placeholder="e.g. 10000"
+                placeholder="f.eks. 10000"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 data-testid="input-min-price"
               />
             </div>
             <div>
-              <Label className="text-xs">Max Price (EUR)</Label>
+              <Label className="text-xs">Maks. Pris (EUR)</Label>
               <Input
                 type="number"
-                placeholder="e.g. 50000"
+                placeholder="f.eks. 50000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 data-testid="input-max-price"
               />
             </div>
             <div>
-              <Label className="text-xs">Min Profit (DKK)</Label>
+              <Label className="text-xs">Min. Profit (DKK)</Label>
               <Input
                 type="number"
-                placeholder="e.g. 20000"
+                placeholder="f.eks. 20000"
                 value={minProfit}
                 onChange={(e) => setMinProfit(e.target.value)}
                 data-testid="input-min-profit"
               />
             </div>
             <div>
-              <Label className="text-xs">Min ROI (%)</Label>
+              <Label className="text-xs">Min. ROI (%)</Label>
               <Input
                 type="number"
-                placeholder="e.g. 10"
+                placeholder="f.eks. 10"
                 value={minROI}
                 onChange={(e) => setMinROI(e.target.value)}
                 data-testid="input-min-roi"
               />
             </div>
             <div>
-              <Label className="text-xs">Fuel Type</Label>
+              <Label className="text-xs">Brændstof</Label>
               <Select value={fuelFilter} onValueChange={setFuelFilter}>
                 <SelectTrigger data-testid="select-fuel">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="all">Alle</SelectItem>
                   <SelectItem value="diesel">Diesel</SelectItem>
-                  <SelectItem value="petrol">Petrol</SelectItem>
+                  <SelectItem value="petrol">Benzin</SelectItem>
                   <SelectItem value="hybrid">Hybrid/PHEV</SelectItem>
-                  <SelectItem value="electric">Electric</SelectItem>
+                  <SelectItem value="electric">El</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Gearbox</Label>
+              <Label className="text-xs">Gearkasse</Label>
               <Select value={gearFilter} onValueChange={setGearFilter}>
                 <SelectTrigger data-testid="select-gear">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="automatic">Automatic</SelectItem>
-                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="all">Alle</SelectItem>
+                  <SelectItem value="automatic">Automatisk</SelectItem>
+                  <SelectItem value="manual">Manuel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Source Country</Label>
+              <Label className="text-xs">Kildeland</Label>
               <Select value={countryFilter} onValueChange={setCountryFilter}>
                 <SelectTrigger data-testid="select-country">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
+                  <SelectItem value="all">Alle lande</SelectItem>
                   {sourceCountries.map(c => (
                     <SelectItem key={c} value={c!}>{c}</SelectItem>
                   ))}
@@ -260,18 +260,18 @@ export default function AuctionFinder() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">VAT Type</Label>
+              <Label className="text-xs">Momstype</Label>
               <Select value={vatFilter} onValueChange={setVatFilter}>
                 <SelectTrigger data-testid="select-vat">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="all">Alle</SelectItem>
                   <SelectItem value="eu_reverse_charge">EU Reverse Charge</SelectItem>
-                  <SelectItem value="margin">Margin Scheme</SelectItem>
-                  <SelectItem value="dk_vat">DK VAT (25%)</SelectItem>
-                  <SelectItem value="private">Private Sale</SelectItem>
-                  <SelectItem value="unknown">Unknown</SelectItem>
+                  <SelectItem value="margin">Brugtmoms</SelectItem>
+                  <SelectItem value="dk_vat">DK Moms (25%)</SelectItem>
+                  <SelectItem value="private">Privat salg</SelectItem>
+                  <SelectItem value="unknown">Ukendt</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -282,7 +282,7 @@ export default function AuctionFinder() {
                   onCheckedChange={setHideRisk}
                   data-testid="switch-hide-risk"
                 />
-                <Label className="text-xs">Hide Risk</Label>
+                <Label className="text-xs">Skjul Risiko</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
@@ -290,7 +290,7 @@ export default function AuctionFinder() {
                   onCheckedChange={setOnlyEV}
                   data-testid="switch-only-ev"
                 />
-                <Label className="text-xs">EV Only</Label>
+                <Label className="text-xs">Kun EL</Label>
               </div>
             </div>
           </div>
@@ -302,10 +302,10 @@ export default function AuctionFinder() {
           <Flame className="w-3 h-3 mr-1" /> Hot Deals: {hotDeals.length}
         </Badge>
         <Badge variant="outline" className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30">
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Consider: {consider.length}
+          <CheckCircle2 className="w-3 h-3 mr-1" /> Overvej: {consider.length}
         </Badge>
         <Badge variant="outline" className="bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30">
-          <AlertTriangle className="w-3 h-3 mr-1" /> Risk: {risk.length}
+          <AlertTriangle className="w-3 h-3 mr-1" /> Risiko: {risk.length}
         </Badge>
       </div>
 
@@ -326,7 +326,7 @@ export default function AuctionFinder() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-semibold">Consider</h2>
+            <h2 className="text-sm font-semibold">Overvej</h2>
             <Badge variant="secondary" className="text-xs">{consider.length}</Badge>
           </div>
           <div className="space-y-2">
@@ -339,7 +339,7 @@ export default function AuctionFinder() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            <h2 className="text-sm font-semibold">Risk Vehicles</h2>
+            <h2 className="text-sm font-semibold">Risiko Biler</h2>
             <Badge variant="secondary" className="text-xs">{risk.length}</Badge>
           </div>
           <div className="space-y-2">
@@ -351,9 +351,9 @@ export default function AuctionFinder() {
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Car className="w-12 h-12 text-muted-foreground mb-3" />
-          <h3 className="text-lg font-semibold">No vehicles found</h3>
-          <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search criteria</p>
-          <Button variant="outline" className="mt-3" onClick={resetFilters}>Reset All Filters</Button>
+          <h3 className="text-lg font-semibold">Ingen biler fundet</h3>
+          <p className="text-sm text-muted-foreground mt-1">Prøv at justere dine filtre eller søgekriterier</p>
+          <Button variant="outline" className="mt-3" onClick={resetFilters}>Nulstil Alle Filtre</Button>
         </div>
       )}
     </div>

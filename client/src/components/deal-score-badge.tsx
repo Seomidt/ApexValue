@@ -34,7 +34,7 @@ export function DealScoreBadge({ score, size = "md" }: DealScoreBadgeProps) {
 
 export function DealRecommendationBadge({ score }: { score: number }) {
   const rec = getDealRecommendation(score);
-  const labels = { buy: "BUY", consider: "CONSIDER", drop: "DROP" };
+  const labels = { buy: "KØB", consider: "OVERVEJ", drop: "DROP" };
   const colors = {
     buy: "bg-emerald-500 text-white",
     consider: "bg-amber-500 text-white",

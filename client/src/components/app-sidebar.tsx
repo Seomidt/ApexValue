@@ -17,17 +17,17 @@ import logoPath from "@assets/image_1770805863097.png";
 
 const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Auction Finder", url: "/auction-finder", icon: Search },
+  { title: "Auktionssøger", url: "/auction-finder", icon: Search },
   { title: "Pipeline", url: "/pipeline", icon: GitBranch },
-  { title: "Compare", url: "/compare", icon: GitCompareArrows },
-  { title: "VAT & Tax", url: "/vat-tax", icon: Receipt },
-  { title: "Cost Templates", url: "/cost-templates", icon: Layers },
-  { title: "Reports", url: "/reports", icon: FileText },
+  { title: "Sammenlign", url: "/compare", icon: GitCompareArrows },
+  { title: "Moms & Afgift", url: "/vat-tax", icon: Receipt },
+  { title: "Omkostninger", url: "/cost-templates", icon: Layers },
+  { title: "Rapporter", url: "/reports", icon: FileText },
 ];
 
 const bottomItems = [
   { title: "Admin", url: "/admin", icon: Shield },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Indstillinger", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -125,7 +125,7 @@ export function AppSidebar() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium truncate" data-testid="text-username">
-                {user.firstName || user.email || "User"}
+                {user.firstName || user.email || "Bruger"}
               </p>
             </div>
           </div>

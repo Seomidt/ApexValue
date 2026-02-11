@@ -10,6 +10,26 @@ import { calcProfit } from "@/lib/calculations";
 import { Shield, Building2, Users, BarChart3, Activity, Database, Globe, Clock, TrendingUp, AlertTriangle } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
 
+const fuelLabels: Record<string, string> = {
+  petrol: "Benzin",
+  diesel: "Diesel",
+  electric: "El",
+  hybrid: "Hybrid",
+  unknown: "Ukendt",
+};
+
+const statusLabels: Record<string, string> = {
+  found: "Fundet",
+  evaluating: "Under vurdering",
+  bid_placed: "Bud afgivet",
+  won: "Vundet",
+  transport: "Transport",
+  preparation: "Klargøring",
+  ready_for_sale: "Klar til salg",
+  online: "Online",
+  sold: "Solgt",
+};
+
 function StatCard({ title, value, subtitle, icon: Icon }: {
   title: string; value: string; subtitle?: string; icon: any;
 }) {
@@ -51,20 +71,21 @@ export default function Admin() {
   }, {} as Record<string, number>);
 
   const fuelDistribution = allVehicles.reduce((acc, v) => {
-    acc[v.fuelType || "unknown"] = (acc[v.fuelType || "unknown"] || 0) + 1;
+    const key = v.fuelType || "unknown";
+    acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const countryDistribution = allVehicles.reduce((acc, v) => {
-    acc[v.sourceCountry || "unknown"] = (acc[v.sourceCountry || "unknown"] || 0) + 1;
+    acc[v.sourceCountry || "Ukendt"] = (acc[v.sourceCountry || "Ukendt"] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const demoOrgs = [
-    { name: "Demo Organization", slug: "demo-org", plan: "free", users: 1, vehicles: allVehicles.length, status: "active" },
-    { name: "Nordic Motors ApS", slug: "nordic-motors", plan: "pro", users: 4, vehicles: 0, status: "active" },
-    { name: "AutoDanmark Import", slug: "auto-dk", plan: "team", users: 8, vehicles: 0, status: "active" },
-    { name: "Test Org", slug: "test-org", plan: "free", users: 1, vehicles: 0, status: "inactive" },
+    { name: "Demo Organisation", slug: "demo-org", plan: "free", users: 1, vehicles: allVehicles.length, status: "aktiv" },
+    { name: "Nordic Motors ApS", slug: "nordic-motors", plan: "pro", users: 4, vehicles: 0, status: "aktiv" },
+    { name: "AutoDanmark Import", slug: "auto-dk", plan: "team", users: 8, vehicles: 0, status: "aktiv" },
+    { name: "Test Org", slug: "test-org", plan: "free", users: 1, vehicles: 0, status: "inaktiv" },
   ];
 
   if (isLoading) {
@@ -84,26 +105,26 @@ export default function Admin() {
         <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">
           <Shield className="w-5 h-5" /> SuperAdmin Panel
         </h1>
-        <p className="text-sm text-muted-foreground">Platform overview, organization management, usage analytics</p>
+        <p className="text-sm text-muted-foreground">Platformoversigt, organisationsstyring, brugsanalyse</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard title="Organizations" value={String(demoOrgs.length)} subtitle={`${demoOrgs.filter(o => o.status === "active").length} active`} icon={Building2} />
-        <StatCard title="Total Users" value={String(demoOrgs.reduce((s, o) => s + o.users, 0))} subtitle="across all orgs" icon={Users} />
-        <StatCard title="Total Vehicles" value={String(allVehicles.length)} subtitle={`Avg score: ${avgScore}`} icon={Database} />
-        <StatCard title="Total Potential Profit" value={formatCurrency(totalProfit, "DKK")} subtitle="platform-wide" icon={TrendingUp} />
+        <StatCard title="Organisationer" value={String(demoOrgs.length)} subtitle={`${demoOrgs.filter(o => o.status === "aktiv").length} aktive`} icon={Building2} />
+        <StatCard title="Brugere i Alt" value={String(demoOrgs.reduce((s, o) => s + o.users, 0))} subtitle="på tværs af alle org." icon={Users} />
+        <StatCard title="Biler i Alt" value={String(allVehicles.length)} subtitle={`Gns. score: ${avgScore}`} icon={Database} />
+        <StatCard title="Samlet Potentiel Profit" value={formatCurrency(totalProfit, "DKK")} subtitle="hele platformen" icon={TrendingUp} />
       </div>
 
       <Tabs defaultValue="organizations" className="space-y-3">
         <TabsList className="flex-wrap">
           <TabsTrigger value="organizations" data-testid="tab-organizations">
-            <Building2 className="w-3.5 h-3.5 mr-1" /> Organizations
+            <Building2 className="w-3.5 h-3.5 mr-1" /> Organisationer
           </TabsTrigger>
           <TabsTrigger value="usage" data-testid="tab-usage">
-            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Usage
+            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Forbrug
           </TabsTrigger>
           <TabsTrigger value="analytics" data-testid="tab-analytics">
-            <Activity className="w-3.5 h-3.5 mr-1" /> Analytics
+            <Activity className="w-3.5 h-3.5 mr-1" /> Analyse
           </TabsTrigger>
         </TabsList>
 
@@ -112,11 +133,11 @@ export default function Admin() {
             <table className="w-full text-sm" data-testid="table-organizations">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b">
-                  <th className="p-3 font-medium">Organization</th>
+                  <th className="p-3 font-medium">Organisation</th>
                   <th className="p-3 font-medium">Slug</th>
                   <th className="p-3 font-medium">Plan</th>
-                  <th className="p-3 font-medium text-center">Users</th>
-                  <th className="p-3 font-medium text-center">Vehicles</th>
+                  <th className="p-3 font-medium text-center">Brugere</th>
+                  <th className="p-3 font-medium text-center">Biler</th>
                   <th className="p-3 font-medium">Status</th>
                   <th className="p-3 font-medium"></th>
                 </tr>
@@ -140,14 +161,14 @@ export default function Admin() {
                     <td className="p-3 text-center tabular-nums">{org.vehicles}</td>
                     <td className="p-3">
                       <Badge variant="outline" className={`text-xs ${
-                        org.status === "active" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
+                        org.status === "aktiv" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
                         "bg-muted text-muted-foreground"
                       }`}>
                         {org.status}
                       </Badge>
                     </td>
                     <td className="p-3 text-right">
-                      <Button size="sm" variant="ghost" data-testid={`button-manage-${org.slug}`}>Manage</Button>
+                      <Button size="sm" variant="ghost" data-testid={`button-manage-${org.slug}`}>Administrer</Button>
                     </td>
                   </tr>
                 ))}
@@ -160,7 +181,7 @@ export default function Admin() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4" /> Source Countries
+                <Globe className="w-4 h-4" /> Kildelande
               </h3>
               <div className="space-y-2">
                 {Object.entries(countryDistribution).sort((a, b) => b[1] - a[1]).map(([country, count]) => (
@@ -184,7 +205,7 @@ export default function Admin() {
               <div className="space-y-2">
                 {Object.entries(statusDistribution).sort((a, b) => b[1] - a[1]).map(([status, count]) => (
                   <div key={status} className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium capitalize">{status.replace(/_/g, " ")}</span>
+                    <span className="text-xs font-medium">{statusLabels[status] || status}</span>
                     <div className="flex items-center gap-2 flex-1 mx-3">
                       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                         <div className="h-full bg-[#FF6319] rounded-full" style={{ width: `${(count / allVehicles.length) * 100}%` }} />
@@ -198,12 +219,12 @@ export default function Admin() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Fuel Type Distribution
+                <Activity className="w-4 h-4" /> Brændstoffordeling
               </h3>
               <div className="space-y-2">
                 {Object.entries(fuelDistribution).sort((a, b) => b[1] - a[1]).map(([fuel, count]) => (
                   <div key={fuel} className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium capitalize">{fuel}</span>
+                    <span className="text-xs font-medium">{fuelLabels[fuel] || fuel}</span>
                     <div className="flex items-center gap-2 flex-1 mx-3">
                       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                         <div className="h-full bg-[#002776] rounded-full" style={{ width: `${(count / allVehicles.length) * 100}%` }} />
@@ -217,23 +238,23 @@ export default function Admin() {
 
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Recent Activity
+                <Clock className="w-4 h-4" /> Seneste Aktivitet
               </h3>
               <div className="space-y-2 text-xs">
                 <div className="flex items-center gap-2 py-1.5 border-b">
-                  <Badge variant="secondary" className="text-[10px]">NEW</Badge>
-                  <span>Demo Organization added 38 vehicles</span>
-                  <span className="text-muted-foreground ml-auto">Just now</span>
+                  <Badge variant="secondary" className="text-[10px]">NY</Badge>
+                  <span>Demo Organisation tilføjede 38 biler</span>
+                  <span className="text-muted-foreground ml-auto">Lige nu</span>
                 </div>
                 <div className="flex items-center gap-2 py-1.5 border-b">
                   <Badge variant="secondary" className="text-[10px]">SYS</Badge>
-                  <span>Market comps generated (500+ comparisons)</span>
-                  <span className="text-muted-foreground ml-auto">Just now</span>
+                  <span>Markedssammenligninger genereret (500+ sammenligninger)</span>
+                  <span className="text-muted-foreground ml-auto">Lige nu</span>
                 </div>
                 <div className="flex items-center gap-2 py-1.5 border-b">
                   <Badge variant="secondary" className="text-[10px]">SYS</Badge>
-                  <span>Cost templates seeded (11 templates, 8 markets)</span>
-                  <span className="text-muted-foreground ml-auto">Just now</span>
+                  <span>Omkostningsskabeloner oprettet (11 skabeloner, 8 markeder)</span>
+                  <span className="text-muted-foreground ml-auto">Lige nu</span>
                 </div>
               </div>
             </Card>
@@ -243,12 +264,12 @@ export default function Admin() {
         <TabsContent value="analytics">
           <Card className="p-4 text-center py-12">
             <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-sm font-semibold mb-1">Advanced Analytics</h3>
+            <h3 className="text-sm font-semibold mb-1">Avanceret Analyse</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Real-time user tracking, feature adoption metrics, conversion funnels,
-              and revenue analytics. Available with live data integration.
+              Realtids brugertracking, funktionsadoptionsmålinger, konverteringstragte
+              og omsætningsanalyse. Tilgængelig med live dataintegration.
             </p>
-            <Button variant="outline" className="mt-4" disabled>Coming Soon</Button>
+            <Button variant="outline" className="mt-4" disabled>Kommer Snart</Button>
           </Card>
         </TabsContent>
       </Tabs>
