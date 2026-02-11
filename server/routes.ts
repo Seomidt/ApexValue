@@ -197,6 +197,77 @@ export async function registerRoutes(
     }
   });
 
+  const API_TEST_URLS: Record<string, { url: string; method: string; name: string }> = {
+    MOBILE_DE: { url: "https://services.mobile.de/search-api/search", method: "HEAD", name: "mobile.de" },
+    AUTOSCOUT24: { url: "https://api.autoscout24.com/", method: "HEAD", name: "AutoScout24" },
+    BCA: { url: "https://www.bca.com/", method: "HEAD", name: "BCA Auctions" },
+    AUTO1: { url: "https://www.auto1.com/", method: "HEAD", name: "Auto1 / wkda" },
+    ASG: { url: "https://www.asgdigital.dk/", method: "HEAD", name: "ASG Digital" },
+    DMR: { url: "https://motorregister.skat.dk/", method: "HEAD", name: "DMR API" },
+    BILINFO: { url: "https://www.bilinfo.dk/", method: "HEAD", name: "Bilinfo" },
+    R2: { url: "https://api.cloudflare.com/client/v4/", method: "HEAD", name: "Cloudflare R2" },
+  };
+
+  app.post("/api/connectors/test", async (req, res) => {
+    try {
+      const { connectorKey, apiKey, apiSecret } = req.body;
+      if (!connectorKey || typeof connectorKey !== "string" || !apiKey || typeof apiKey !== "string") {
+        return res.status(400).json({ success: false, message: "Connector-nøgle og API-nøgle er påkrævet." });
+      }
+
+      const allowedKeys = Object.keys(API_TEST_URLS);
+      if (!allowedKeys.includes(connectorKey)) {
+        return res.status(400).json({ success: false, message: "Ukendt connector." });
+      }
+
+      const testConfig = API_TEST_URLS[connectorKey];
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const response = await fetch(testConfig.url, {
+          method: testConfig.method,
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "User-Agent": "ApexValue/1.0",
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (response.status === 401 || response.status === 403) {
+          return res.json({
+            success: false,
+            status: response.status,
+            message: `Adgang nægtet — kontrollér dine ${testConfig.name} legitimationsoplysninger.`,
+          });
+        }
+
+        return res.json({
+          success: true,
+          status: response.status,
+          message: `${testConfig.name} svarer korrekt (HTTP ${response.status}). Forbindelse OK.`,
+        });
+      } catch (fetchError: any) {
+        clearTimeout(timeout);
+        if (fetchError.name === "AbortError") {
+          return res.json({
+            success: false,
+            message: `Timeout — ${testConfig.name} svarede ikke inden for 8 sekunder.`,
+          });
+        }
+        return res.json({
+          success: false,
+          message: `Kunne ikke nå ${testConfig.name}. Kontrollér netværk og nøgler.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error testing connector:", error);
+      res.status(500).json({ success: false, message: "Serverfejl under test af forbindelse." });
+    }
+  });
+
   await seedDemoData();
 
   return httpServer;

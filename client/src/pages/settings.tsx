@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppMode } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, User, Building2, Users, Key, HardDrive, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
+import { Settings as SettingsIcon, User, Building2, Users, Key, HardDrive, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import { MARKET_COUNTRIES } from "@shared/schema";
 
 const CONNECTORS = [
@@ -25,51 +26,106 @@ const CONNECTORS = [
   { name: "Cloudflare R2", desc: "Objekt-lagring til billeder og dokumenter", key: "R2", category: "storage" },
 ];
 
-function ConnectorCard({ connector, isConfigured, onConfigure }: {
+type TestResult = { success: boolean; message: string; status?: number } | null;
+
+function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTesting, onTest }: {
   connector: typeof CONNECTORS[0];
   isConfigured: boolean;
   onConfigure: (key: string) => void;
+  testResult: TestResult;
+  isTesting: boolean;
+  onTest: (key: string) => void;
 }) {
   const { mode } = useAppMode();
   const isDemo = mode === "demo";
 
   return (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-md border" data-testid={`connector-${connector.key}`}>
-      <div className="min-w-0">
-        <p className="text-sm font-medium">{connector.name}</p>
-        <p className="text-xs text-muted-foreground">{connector.desc}</p>
+    <div className="p-3 rounded-md border space-y-2" data-testid={`connector-${connector.key}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{connector.name}</p>
+          <p className="text-xs text-muted-foreground">{connector.desc}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isConfigured ? (
+            <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+              <CheckCircle2 className="w-3 h-3 mr-1" /> Tilsluttet
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-xs">
+              <XCircle className="w-3 h-3 mr-1" /> Ikke konfigureret
+            </Badge>
+          )}
+          {isConfigured && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isTesting}
+              onClick={() => onTest(connector.key)}
+              data-testid={`button-test-${connector.key}`}
+            >
+              {isTesting ? (
+                <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Tester...</>
+              ) : (
+                <><Zap className="w-3.5 h-3.5 mr-1" /> Test Forbindelse</>
+              )}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onConfigure(connector.key)}
+            data-testid={`button-configure-${connector.key}`}
+          >
+            Konfigurér
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {isConfigured ? (
-          <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> Tilsluttet
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-xs">
-            <XCircle className="w-3 h-3 mr-1" /> Ikke konfigureret
-          </Badge>
-        )}
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isDemo}
-          onClick={() => onConfigure(connector.key)}
-          data-testid={`button-configure-${connector.key}`}
-        >
-          Konfigurér
-        </Button>
-      </div>
+      {testResult && (
+        <div className={`flex items-start gap-2 text-xs p-2 rounded-md ${
+          testResult.success
+            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            : "bg-red-500/10 text-red-700 dark:text-red-400"
+        }`} data-testid={`test-result-${connector.key}`}>
+          {testResult.success ? (
+            <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          ) : (
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          )}
+          <span>{testResult.message}</span>
+        </div>
+      )}
     </div>
   );
 }
 
-function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string; onClose: () => void; onSave: (key: string) => void }) {
+function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string; onClose: () => void; onSave: (key: string, apiKey: string, apiSecret: string) => void }) {
   const [showKey, setShowKey] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult>(null);
   const { toast } = useToast();
 
   const connector = CONNECTORS.find(c => c.key === connectorKey);
+
+  const handleTest = async () => {
+    if (!apiKey) {
+      toast({ title: "Manglende nøgle", description: "Indtast en API-nøgle først.", variant: "destructive" });
+      return;
+    }
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await apiRequest("POST", "/api/connectors/test", { connectorKey, apiKey, apiSecret });
+      const data = await res.json();
+      setTestResult(data);
+    } catch {
+      setTestResult({ success: false, message: "Netværksfejl — kunne ikke kontakte serveren." });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   return (
     <Card className="p-4 space-y-3 border-primary/30">
@@ -112,15 +168,45 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
           />
         </div>
       </div>
+
+      {testResult && (
+        <div className={`flex items-start gap-2 text-xs p-2 rounded-md ${
+          testResult.success
+            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            : "bg-red-500/10 text-red-700 dark:text-red-400"
+        }`} data-testid={`test-result-dialog-${connectorKey}`}>
+          {testResult.success ? (
+            <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          ) : (
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          )}
+          <span>{testResult.message}</span>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="w-3.5 h-3.5" />
-        <span>Nøgler krypteres og opbevares sikkert pr. organisation.</span>
+        <span>Nøgler gemmes lokalt i denne session. Aktivér Live Mode for permanent lagring.</span>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Button
           size="sm"
+          variant="outline"
+          disabled={isTesting || !apiKey}
+          onClick={handleTest}
+          data-testid={`button-test-dialog-${connectorKey}`}
+        >
+          {isTesting ? (
+            <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Tester...</>
+          ) : (
+            <><Zap className="w-3.5 h-3.5 mr-1" /> Test Forbindelse</>
+          )}
+        </Button>
+        <Button
+          size="sm"
+          disabled={!apiKey}
           onClick={() => {
-            onSave(connectorKey);
+            onSave(connectorKey, apiKey, apiSecret);
             toast({ title: "API Nøgle gemt", description: `${connector?.name} legitimationsoplysninger er gemt.` });
             onClose();
           }}
@@ -137,11 +223,40 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
 export default function Settings() {
   const { user } = useAuth();
   const { mode } = useAppMode();
+  const { toast } = useToast();
   const [configuring, setConfiguring] = useState<string | null>(null);
   const [configuredKeys, setConfiguredKeys] = useState<Set<string>>(new Set());
+  const [savedCredentials, setSavedCredentials] = useState<Record<string, { apiKey: string; apiSecret: string }>>({});
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
+  const [testingKeys, setTestingKeys] = useState<Set<string>>(new Set());
 
-  const handleSaveKey = (key: string) => {
-    setConfiguredKeys(prev => new Set([...prev, key]));
+  const handleSaveKey = (key: string, apiKey: string, apiSecret: string) => {
+    setConfiguredKeys(prev => { const next = new Set(Array.from(prev)); next.add(key); return next; });
+    setSavedCredentials(prev => ({ ...prev, [key]: { apiKey, apiSecret } }));
+    setTestResults(prev => ({ ...prev, [key]: null }));
+  };
+
+  const handleTestFromCard = async (connectorKey: string) => {
+    const creds = savedCredentials[connectorKey];
+    if (!creds?.apiKey) {
+      toast({ title: "Ingen nøgle gemt", description: "Konfigurér API-nøglen først.", variant: "destructive" });
+      return;
+    }
+    setTestingKeys(prev => { const next = new Set(Array.from(prev)); next.add(connectorKey); return next; });
+    setTestResults(prev => ({ ...prev, [connectorKey]: null }));
+    try {
+      const res = await apiRequest("POST", "/api/connectors/test", {
+        connectorKey,
+        apiKey: creds.apiKey,
+        apiSecret: creds.apiSecret,
+      });
+      const data = await res.json();
+      setTestResults(prev => ({ ...prev, [connectorKey]: data }));
+    } catch {
+      setTestResults(prev => ({ ...prev, [connectorKey]: { success: false, message: "Netværksfejl — kunne ikke kontakte serveren." } }));
+    } finally {
+      setTestingKeys(prev => { const next = new Set(prev); next.delete(connectorKey); return next; });
+    }
   };
 
   return (
@@ -257,8 +372,7 @@ export default function Settings() {
             </div>
             <p className="text-xs text-muted-foreground">
               Bring Your Own Keys (BYOK): Indtast dine API-legitimationsoplysninger for at aktivere live data.
-              Nøgler krypteres og opbevares sikkert pr. organisation.
-              {mode === "demo" && " Skift til Live Mode for at konfigurere integrationer."}
+              Test forbindelsen inden du gemmer for at sikre, at dine nøgler virker korrekt.
             </p>
             <Separator />
 
@@ -270,7 +384,7 @@ export default function Settings() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Markedsdata</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "market").map(c => (
-                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
                 ))}
               </div>
             </div>
@@ -279,7 +393,7 @@ export default function Settings() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Auktionsplatforme</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "auction").map(c => (
-                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
                 ))}
               </div>
             </div>
@@ -288,7 +402,7 @@ export default function Settings() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Skat & Registrering</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "tax").map(c => (
-                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
                 ))}
               </div>
             </div>
@@ -297,7 +411,7 @@ export default function Settings() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Annoncering & Distribution</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "listing").map(c => (
-                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
                 ))}
               </div>
             </div>
@@ -306,7 +420,7 @@ export default function Settings() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Lagring</h4>
               <div className="space-y-2">
                 {CONNECTORS.filter(c => c.category === "storage").map(c => (
-                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} testResult={testResults[c.key] || null} isTesting={testingKeys.has(c.key)} onTest={handleTestFromCard} />
                 ))}
               </div>
             </div>

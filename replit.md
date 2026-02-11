@@ -8,7 +8,7 @@ ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Rac
 - 2026-02-11: Added Compare Models page (2-5 vehicle side-by-side comparison)
 - 2026-02-11: Added SuperAdmin panel with org management, usage analytics
 - 2026-02-11: Added PDF report generation (jsPDF) with analytics dashboard
-- 2026-02-11: Added Demo/Live mode toggle with BYOK settings (8 API connectors)
+- 2026-02-11: Added Demo/Live mode toggle with BYOK settings (8 API connectors) + Test Forbindelse (API connection testing)
 - 2026-02-11: Enhanced Dashboard with Danish UI, Auction Finder with full filters, Pipeline management
 - Gulf Racing theme: Powder Blue (#B9D9EB), Orange (#FF6319), Dark Blue (#002776)
 - Demo Mode accessible without authentication
