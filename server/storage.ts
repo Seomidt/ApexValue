@@ -19,6 +19,7 @@ export interface IStorage {
   getVehicle(id: number): Promise<Vehicle | undefined>;
   createVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
   updateVehicle(id: number, data: Partial<InsertVehicle>): Promise<Vehicle | undefined>;
+  deleteVehicle(id: number): Promise<boolean>;
 
   getMarketComps(vehicleId: number): Promise<MarketComp[]>;
   createMarketComp(comp: InsertMarketComp): Promise<MarketComp>;
@@ -29,6 +30,7 @@ export interface IStorage {
   getOrganization(id: number): Promise<Organization | undefined>;
   createOrganization(org: InsertOrganization): Promise<Organization>;
 
+  getEvents(): Promise<Event[]>;
   createEvent(event: InsertEvent): Promise<Event>;
 }
 
@@ -75,6 +77,12 @@ export class DatabaseStorage implements IStorage {
     return updated || undefined;
   }
 
+  async deleteVehicle(id: number): Promise<boolean> {
+    await db.delete(marketComps).where(eq(marketComps.vehicleId, id));
+    const result = await db.delete(vehicles).where(eq(vehicles.id, id)).returning();
+    return result.length > 0;
+  }
+
   async getMarketComps(vehicleId: number): Promise<MarketComp[]> {
     return db.select().from(marketComps).where(eq(marketComps.vehicleId, vehicleId));
   }
@@ -101,6 +109,10 @@ export class DatabaseStorage implements IStorage {
   async createOrganization(org: InsertOrganization): Promise<Organization> {
     const [created] = await db.insert(organizations).values(org).returning();
     return created;
+  }
+
+  async getEvents(): Promise<Event[]> {
+    return db.select().from(events).orderBy(desc(events.createdAt)).limit(100);
   }
 
   async createEvent(event: InsertEvent): Promise<Event> {

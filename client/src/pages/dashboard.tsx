@@ -1,195 +1,435 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DealScoreBadge } from "@/components/deal-score-badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
 import { formatCurrency, formatNumber } from "@/lib/i18n";
-import { calcProfit, calcROI, getDealRecommendation } from "@/lib/calculations";
+import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags, getDealRecommendation } from "@/lib/calculations";
 import {
   GitBranch, TrendingUp, BarChart3, Flame, AlertTriangle,
-  Plus, Link2, FileText, ArrowRight, Car
+  Plus, FileText, ArrowRight, Car, Search, Calculator,
+  Calendar, Gauge, Fuel, Settings2, Eye, MapPin, ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
 import type { Vehicle } from "@shared/schema";
+import { MARKET_COUNTRIES } from "@shared/schema";
 
-function KPICard({ title, value, subtitle, icon: Icon, color }: {
-  title: string; value: string; subtitle?: string; icon: any; color: string;
+function KPICard({ title, value, subtitle, icon: Icon, accent }: {
+  title: string; value: string; subtitle?: string; icon: any; accent?: boolean;
 }) {
   return (
     <Card className="p-4" data-testid={`card-kpi-${title.toLowerCase().replace(/\s+/g, '-')}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold mt-1 tabular-nums">{value}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Icon className="w-3.5 h-3.5" />
+            {title}
+          </p>
+          <p className={`text-2xl font-bold mt-1 tabular-nums ${accent ? "text-[#FF6319]" : ""}`}>{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-        </div>
-        <div className={`p-2 rounded-md ${color}`}>
-          <Icon className="w-4 h-4" />
         </div>
       </div>
     </Card>
   );
 }
 
-function VehicleRow({ v, currency }: { v: Vehicle; currency: string }) {
+function VehicleSearchCard({ v }: { v: Vehicle }) {
   const profit = calcProfit(v, "normal");
-  const roi = calcROI(v, "normal");
+  const score = v.dealScore || 0;
+  const placeholderImg = `https://placehold.co/400x240/1a2332/B9D9EB?text=${encodeURIComponent(v.make + ' ' + v.model)}`;
+  const imgSrc = v.imageUrls && v.imageUrls.length > 0 ? v.imageUrls[0] : placeholderImg;
+  const country = MARKET_COUNTRIES.find(c => c.code === v.sourceCountry);
+
   return (
-    <Link href={`/vehicle/${v.id}`}>
-      <div className="flex items-center gap-3 p-2 rounded-md hover-elevate cursor-pointer" data-testid={`row-vehicle-${v.id}`}>
-        <div className="w-8 flex-shrink-0">
-          <DealScoreBadge score={v.dealScore || 0} size="sm" />
+    <Card className="overflow-visible" data-testid={`card-vehicle-${v.id}`}>
+      <div className="p-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="font-semibold text-sm truncate" data-testid={`text-vehicle-title-${v.id}`}>
+            {v.make} {v.model} {v.year}
+          </h3>
+          <div className="flex-shrink-0 bg-[#FF6319] text-white px-2 py-1 rounded-md text-center">
+            <p className="text-[10px] font-medium leading-none">Deal Score</p>
+            <p className="text-lg font-bold leading-tight tabular-nums">{score}</p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{v.make} {v.model} {v.variant || ""}</p>
-          <p className="text-xs text-muted-foreground">{v.year} &middot; {formatNumber(v.mileageKm)} km</p>
+
+        <div className="relative mb-2 rounded-md overflow-hidden bg-muted">
+          <img src={imgSrc} alt={`${v.make} ${v.model}`} className="w-full h-32 object-cover" />
         </div>
-        <div className="text-right flex-shrink-0">
-          <p className={`text-sm font-semibold tabular-nums ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-            {formatCurrency(profit, currency)}
-          </p>
-          <p className="text-xs text-muted-foreground tabular-nums">{roi.toFixed(1)}% ROI</p>
+
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2 flex-wrap">
+          <span>{v.variant || `${v.enginePower || ""}hp`}</span>
+          <span>/</span>
+          <span>{formatNumber(v.mileageKm)} km</span>
+          {country && (
+            <span className="flex items-center gap-0.5">
+              <MapPin className="w-3 h-3" />
+              {country.name} - {v.sourceType === "auction" ? "auction" : "portal"}
+            </span>
+          )}
         </div>
-        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <span className="text-xs text-muted-foreground">{v.purchaseCurrency}</span>
+            <span className="text-base font-bold ml-1 tabular-nums">{formatNumber(v.purchasePrice || 0)}</span>
+          </div>
+          <Link href={`/vehicle/${v.id}`}>
+            <Button size="sm" variant="outline" data-testid={`button-details-${v.id}`}>
+              Se Detaljer <ArrowRight className="w-3 h-3 ml-1" />
+            </Button>
+          </Link>
+        </div>
       </div>
-    </Link>
+    </Card>
+  );
+}
+
+function ProfitCalculator({ vehicles }: { vehicles: Vehicle[] }) {
+  const [selectedId, setSelectedId] = useState<string>("");
+  const selected = vehicles.find(v => v.id === parseInt(selectedId));
+
+  const purchaseTotal = selected ? (selected.purchasePrice || 0) : 0;
+  const regTax = selected ? (selected.registrationTax || 0) : 0;
+  const transport = selected ? (selected.transportCost || 0) : 0;
+  const costs = selected ? ((selected.preparationCost || 0) + (selected.inspectionCost || 0) + (selected.otherCosts || 0) + (selected.auctionFees || 0)) : 0;
+  const profit = selected ? calcProfit(selected, "normal") : 0;
+
+  return (
+    <Card className="p-4" data-testid="card-profit-calculator">
+      <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+        <Calculator className="w-4 h-4" /> Profit Beregner
+      </h3>
+      <Select value={selectedId} onValueChange={setSelectedId}>
+        <SelectTrigger className="mb-3" data-testid="select-calc-vehicle">
+          <SelectValue placeholder="Select vehicle..." />
+        </SelectTrigger>
+        <SelectContent>
+          {vehicles.slice(0, 20).map(v => (
+            <SelectItem key={v.id} value={String(v.id)}>
+              {v.make} {v.model} {v.year}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {selected ? (
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Indkøbspris:</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(purchaseTotal, selected.purchaseCurrency)} {selected.purchaseCurrency}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Afgift:</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(regTax, "DKK")}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Transport:</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(transport, "DKK")}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Omkostninger:</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(costs, "DKK")}</span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Forventet Fortjeneste:</span>
+            <span className={`font-bold tabular-nums ${profit >= 0 ? "text-[#FF6319]" : "text-red-500"}`}>
+              {formatCurrency(profit, "DKK")}
+            </span>
+          </div>
+          <Link href={`/vehicle/${selected.id}`}>
+            <Button className="w-full mt-2 bg-[#FF6319] hover:bg-[#FF6319]/90 text-white" data-testid="button-calc-details">
+              Beregn Profit
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-4">
+          Select a vehicle to calculate profit
+        </p>
+      )}
+    </Card>
+  );
+}
+
+function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
+  const watchlistVehicles = vehicles.filter(v =>
+    v.status === "evaluating" || v.status === "bid_placed" || v.status === "found"
+  ).slice(0, 8);
+
+  const statusLabels: Record<string, string> = {
+    found: "Found",
+    evaluating: "Evaluating",
+    bid_placed: "Bid Placed",
+    won: "Won",
+  };
+
+  const statusBadgeClass: Record<string, string> = {
+    found: "bg-muted text-muted-foreground",
+    evaluating: "bg-accent text-accent-foreground",
+    bid_placed: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+    won: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+  };
+
+  return (
+    <Card className="p-4" data-testid="card-watchlist">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <h3 className="text-sm font-semibold">Watchlist</h3>
+        <Link href="/auction-finder">
+          <Button size="sm" variant="outline" className="text-[#FF6319] border-[#FF6319]/30" data-testid="button-view-all-watchlist">
+            Vis Alle <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
+        </Link>
+      </div>
+      {watchlistVehicles.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground border-b">
+                <th className="pb-2 font-medium">Bil</th>
+                <th className="pb-2 font-medium">Lokation</th>
+                <th className="pb-2 font-medium text-right">Pris</th>
+                <th className="pb-2 font-medium">Status</th>
+                <th className="pb-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {watchlistVehicles.map((v, i) => (
+                <tr key={v.id} className={`border-b last:border-0 ${i % 2 === 0 ? "bg-accent/20" : ""}`}
+                    data-testid={`row-watchlist-${v.id}`}>
+                  <td className="py-2 font-medium">
+                    {v.make} {v.model} {v.variant ? v.variant.split(' ')[0] : ''}
+                  </td>
+                  <td className="py-2 text-muted-foreground">{v.sourceType === "auction" ? "Auction" : "Portal"}</td>
+                  <td className="py-2 text-right font-semibold tabular-nums">
+                    {formatCurrency(v.purchasePrice || 0, v.purchaseCurrency)}
+                  </td>
+                  <td className="py-2">
+                    <Badge variant="outline" className={`text-xs ${statusBadgeClass[v.status] || ""}`}>
+                      {statusLabels[v.status] || v.status}
+                    </Badge>
+                  </td>
+                  <td className="py-2 text-right">
+                    <Link href={`/vehicle/${v.id}`}>
+                      <Button size="sm" variant="ghost" data-testid={`button-watchlist-view-${v.id}`}>
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground text-center py-4">No vehicles in watchlist</p>
+      )}
+    </Card>
   );
 }
 
 export default function Dashboard() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [makeFilter, setMakeFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+
   const { data: vehicles, isLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
   });
 
   const allVehicles = vehicles || [];
   const pipelineVehicles = allVehicles.filter(v => v.status !== "sold");
-  const hotDeals = [...allVehicles].filter(v => (v.dealScore || 0) >= 70).sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0)).slice(0, 5);
-  const riskVehicles = allVehicles.filter(v => {
-    const rec = getDealRecommendation(v.dealScore || 0);
-    return rec === "drop" || rec === "consider";
-  }).sort((a, b) => (a.dealScore || 0) - (b.dealScore || 0)).slice(0, 5);
+  const hotDeals = [...allVehicles].filter(v => (v.dealScore || 0) >= 70).sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0));
 
+  const totalResaleEstimate = pipelineVehicles.reduce((sum, v) => sum + (v.resaleNormal || 0), 0);
+  const totalRegistrationTax = pipelineVehicles.reduce((sum, v) => sum + (v.registrationTax || 0), 0);
   const totalPotentialProfit = pipelineVehicles.reduce((sum, v) => sum + calcProfit(v, "normal"), 0);
-  const avgROI = pipelineVehicles.length > 0
-    ? pipelineVehicles.reduce((sum, v) => sum + calcROI(v, "normal"), 0) / pipelineVehicles.length
-    : 0;
+
+  const uniqueMakes = useMemo(() => {
+    const makes = [...new Set(allVehicles.map(v => v.make))].sort();
+    return makes;
+  }, [allVehicles]);
+
+  const filteredVehicles = useMemo(() => {
+    return allVehicles.filter(v => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const match = `${v.make} ${v.model} ${v.variant || ""}`.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (makeFilter !== "all" && v.make !== makeFilter) return false;
+      if (yearFilter !== "all") {
+        const yr = parseInt(yearFilter);
+        if (v.year < yr) return false;
+      }
+      if (priceFilter !== "all") {
+        const maxP = parseInt(priceFilter);
+        if ((v.purchasePrice || 0) > maxP) return false;
+      }
+      return true;
+    });
+  }, [allVehicles, searchQuery, makeFilter, yearFilter, priceFilter]);
+
+  const displayVehicles = filteredVehicles.slice(0, 6);
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
+      <div className="p-4 sm:p-6 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-24 rounded-md" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Skeleton className="h-64 rounded-md" />
-          <Skeleton className="h-64 rounded-md" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-3">
+            <Skeleton className="h-12 rounded-md" />
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 rounded-md" />
+              ))}
+            </div>
+          </div>
+          <Skeleton className="h-80 rounded-md" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-xl font-bold" data-testid="text-page-title">Cockpit</h1>
-          <p className="text-sm text-muted-foreground">Your trading overview</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href="/auction-finder">
-            <Button size="sm" data-testid="button-add-vehicle">
-              <Plus className="w-3.5 h-3.5 mr-1" /> New Vehicle
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className="p-4 sm:p-6 space-y-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <KPICard
-          title="Pipeline"
+          title="Aktuelle Leads"
           value={String(pipelineVehicles.length)}
-          subtitle="active vehicles"
-          icon={GitBranch}
-          color="bg-accent text-accent-foreground"
+          subtitle={`${allVehicles.length} total vehicles`}
+          icon={Car}
         />
         <KPICard
-          title="Potential Profit"
-          value={formatCurrency(totalPotentialProfit, "DKK")}
-          subtitle="across pipeline"
+          title="DK Salgspris (Est.)"
+          value={formatCurrency(totalResaleEstimate, "DKK")}
+          subtitle="total pipeline estimate"
           icon={TrendingUp}
-          color="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
         />
         <KPICard
-          title="Avg. ROI"
-          value={`${avgROI.toFixed(1)}%`}
-          subtitle="normal scenario"
+          title="Forventet Afgift"
+          value={formatCurrency(totalRegistrationTax, "DKK")}
+          subtitle="registration tax total"
           icon={BarChart3}
-          color="bg-accent text-accent-foreground"
         />
         <KPICard
-          title="Hot Deals"
-          value={String(hotDeals.length)}
-          subtitle="score 70+"
+          title="Potentiel Fortjeneste"
+          value={formatCurrency(totalPotentialProfit, "DKK")}
+          subtitle="across all pipeline"
           icon={Flame}
-          color="bg-primary/15 text-primary"
-        />
-        <KPICard
-          title="Risk Vehicles"
-          value={String(riskVehicles.length)}
-          subtitle="needs attention"
-          icon={AlertTriangle}
-          color="bg-amber-500/15 text-amber-600 dark:text-amber-400"
+          accent
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <Flame className="w-4 h-4 text-primary" /> Hot Deals
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <Search className="w-4 h-4" /> Find Bil
             </h2>
-            <Link href="/auction-finder">
-              <Button size="sm" variant="ghost">View all</Button>
-            </Link>
+            <Card className="p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={makeFilter} onValueChange={setMakeFilter}>
+                  <SelectTrigger className="w-[130px]" data-testid="select-make-filter">
+                    <SelectValue placeholder="Maerke" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle maerker</SelectItem>
+                    {uniqueMakes.map(m => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={yearFilter} onValueChange={setYearFilter}>
+                  <SelectTrigger className="w-[120px]" data-testid="select-year-filter">
+                    <SelectValue placeholder="Aargang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle aar</SelectItem>
+                    <SelectItem value="2023">2023+</SelectItem>
+                    <SelectItem value="2022">2022+</SelectItem>
+                    <SelectItem value="2021">2021+</SelectItem>
+                    <SelectItem value="2020">2020+</SelectItem>
+                    <SelectItem value="2019">2019+</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={priceFilter} onValueChange={setPriceFilter}>
+                  <SelectTrigger className="w-[120px]" data-testid="select-price-filter">
+                    <SelectValue placeholder="Pris" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle priser</SelectItem>
+                    <SelectItem value="20000">Max 20.000</SelectItem>
+                    <SelectItem value="30000">Max 30.000</SelectItem>
+                    <SelectItem value="40000">Max 40.000</SelectItem>
+                    <SelectItem value="50000">Max 50.000</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button className="bg-[#FF6319] hover:bg-[#FF6319]/90 text-white" data-testid="button-search">
+                  <Search className="w-4 h-4 mr-1" /> Soeg
+                </Button>
+              </div>
+            </Card>
           </div>
-          {hotDeals.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Car className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No hot deals yet</p>
-              <p className="text-xs text-muted-foreground mt-1">Vehicles with score 70+ appear here</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {hotDeals.map((v) => <VehicleRow key={v.id} v={v} currency="DKK" />)}
-            </div>
-          )}
-        </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" /> Risk Vehicles
-            </h2>
-            <Link href="/pipeline">
-              <Button size="sm" variant="ghost">View all</Button>
-            </Link>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {displayVehicles.map(v => (
+              <VehicleSearchCard key={v.id} v={v} />
+            ))}
           </div>
-          {riskVehicles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertTriangle className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No risk vehicles</p>
-              <p className="text-xs text-muted-foreground mt-1">All vehicles look good</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {riskVehicles.map((v) => <VehicleRow key={v.id} v={v} currency="DKK" />)}
+
+          {filteredVehicles.length > 6 && (
+            <div className="text-center">
+              <Link href="/auction-finder">
+                <Button variant="outline" data-testid="button-view-all-vehicles">
+                  Vis alle {filteredVehicles.length} biler <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
           )}
-        </Card>
+        </div>
+
+        <div className="space-y-4">
+          <ProfitCalculator vehicles={pipelineVehicles} />
+
+          <Card className="p-4" data-testid="card-hot-deals">
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+              <Flame className="w-4 h-4 text-[#FF6319]" /> Hot Deals
+            </h3>
+            {hotDeals.slice(0, 5).map(v => {
+              const profit = calcProfit(v, "normal");
+              return (
+                <Link key={v.id} href={`/vehicle/${v.id}`}>
+                  <div className="flex items-center gap-2 py-1.5 hover-elevate rounded-md px-1 cursor-pointer"
+                       data-testid={`row-hotdeal-${v.id}`}>
+                    <DealScoreBadge score={v.dealScore || 0} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{v.make} {v.model}</p>
+                      <p className="text-[10px] text-muted-foreground">{v.year} / {formatNumber(v.mileageKm)} km</p>
+                    </div>
+                    <span className={`text-xs font-bold tabular-nums ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                      {formatCurrency(profit, "DKK")}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </Card>
+        </div>
       </div>
+
+      <WatchlistTable vehicles={allVehicles} />
 
       <Card className="p-4">
         <h2 className="text-sm font-semibold mb-3">Quick Actions</h2>
@@ -199,9 +439,9 @@ export default function Dashboard() {
               <Plus className="w-4 h-4 mr-2" /> Add New Vehicle
             </Button>
           </Link>
-          <Link href="/auction-finder">
-            <Button variant="outline" className="w-full justify-start" data-testid="button-quick-import">
-              <Link2 className="w-4 h-4 mr-2" /> Import Auction Link
+          <Link href="/pipeline">
+            <Button variant="outline" className="w-full justify-start" data-testid="button-quick-pipeline">
+              <GitBranch className="w-4 h-4 mr-2" /> View Pipeline
             </Button>
           </Link>
           <Link href="/reports">
