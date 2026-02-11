@@ -94,9 +94,7 @@ export default function AuctionFinder() {
   const consider = filtered.filter(v => getDealRecommendation(v.dealScore || 0) === "consider");
   const risk = filtered.filter(v => getDealRecommendation(v.dealScore || 0) === "drop");
 
-  const sourceCountries = useMemo(() => {
-    return [...new Set(allVehicles.map(v => v.sourceCountry).filter(Boolean))].sort();
-  }, [allVehicles]);
+
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -253,8 +251,8 @@ export default function AuctionFinder() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle lande</SelectItem>
-                  {sourceCountries.map(c => (
-                    <SelectItem key={c} value={c!}>{c}</SelectItem>
+                  {MARKET_COUNTRIES.map(c => (
+                    <SelectItem key={c.code} value={c.code}>{c.code} - {c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
