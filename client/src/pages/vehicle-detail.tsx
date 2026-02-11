@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
+import { VehicleImageGallery } from "@/components/vehicle-image-gallery";
 import { formatCurrency, formatNumber } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags } from "@/lib/calculations";
 import {
@@ -81,9 +82,6 @@ export default function VehicleDetail() {
   const minCompPrice = allComps.length > 0 ? Math.min(...allComps.map(c => c.price)) : 0;
   const maxCompPrice = allComps.length > 0 ? Math.max(...allComps.map(c => c.price)) : 0;
 
-  const placeholderImg = `https://placehold.co/600x400/1a2332/B9D9EB?text=${encodeURIComponent(v.make + ' ' + v.model)}`;
-  const imgSrc = v.imageUrls && v.imageUrls.length > 0 ? v.imageUrls[0] : placeholderImg;
-
   const gearLabel = v.gearbox === "automatic" ? "Automatisk" : v.gearbox === "manual" ? "Manuel" : v.gearbox;
   const fuelLabel = v.fuelType === "petrol" ? "Benzin" : v.fuelType === "electric" ? "El" : v.fuelType === "hybrid" ? "Hybrid" : v.fuelType;
 
@@ -153,7 +151,7 @@ export default function VehicleDetail() {
           <Card className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <img src={imgSrc} alt={`${v.make} ${v.model}`} className="w-full h-48 object-cover rounded-md" />
+                <VehicleImageGallery vehicleId={v.id} vehicleName={`${v.make} ${v.model}`} />
               </div>
               <div className="space-y-0">
                 <StatRow label="VIN" value={v.vin || "N/A"} />

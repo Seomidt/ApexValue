@@ -201,6 +201,102 @@ export async function registerRoutes(
 
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+  app.post("/api/vehicles/:id/images", upload.array("images", 10), async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicle(vehicleId);
+      if (!vehicle) {
+        return res.status(404).json({ message: "Bil ikke fundet." });
+      }
+
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "Ingen billeder uploadet." });
+      }
+
+      for (const f of files) {
+        if (!ALLOWED_IMAGE_TYPES.includes(f.mimetype)) {
+          return res.status(400).json({ message: `Filtype ${f.mimetype} er ikke tilladt. Brug JPG, PNG eller WebP.` });
+        }
+      }
+
+      if (!isR2Configured()) {
+        return res.status(400).json({ message: "R2 storage er ikke konfigureret. Billedupload kræver R2." });
+      }
+
+      const existingUrls = vehicle.imageUrls || [];
+      const newKeys: string[] = [];
+
+      for (const file of files) {
+        const ext = file.originalname.split(".").pop() || "jpg";
+        const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const key = `vehicles/${vehicleId}/${safeName}`;
+        await uploadFile(key, file.buffer, file.mimetype);
+        newKeys.push(key);
+      }
+
+      const allUrls = [...existingUrls, ...newKeys];
+      const updated = await storage.updateVehicle(vehicleId, { imageUrls: allUrls });
+      res.json({ imageUrls: updated?.imageUrls || allUrls, uploaded: newKeys.length });
+    } catch (error: any) {
+      console.error("Vehicle image upload error:", error);
+      res.status(500).json({ message: "Fejl ved upload af billeder." });
+    }
+  });
+
+  app.delete("/api/vehicles/:id/images", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicle(vehicleId);
+      if (!vehicle) {
+        return res.status(404).json({ message: "Bil ikke fundet." });
+      }
+      const { key } = req.body;
+      if (!key || typeof key !== "string") {
+        return res.status(400).json({ message: "Billed-nøgle er påkrævet." });
+      }
+      if (!key.startsWith(`vehicles/${vehicleId}/`)) {
+        return res.status(403).json({ message: "Adgang nægtet til denne fil." });
+      }
+      if (isR2Configured()) {
+        try { await deleteFile(key); } catch {}
+      }
+      const updatedUrls = (vehicle.imageUrls || []).filter(u => u !== key);
+      const updated = await storage.updateVehicle(vehicleId, { imageUrls: updatedUrls });
+      res.json({ imageUrls: updated?.imageUrls || updatedUrls });
+    } catch (error) {
+      console.error("Vehicle image delete error:", error);
+      res.status(500).json({ message: "Fejl ved sletning af billede." });
+    }
+  });
+
+  app.get("/api/vehicles/:id/images", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicle(vehicleId);
+      if (!vehicle) {
+        return res.status(404).json({ message: "Bil ikke fundet." });
+      }
+      const keys = vehicle.imageUrls || [];
+      const images = await Promise.all(
+        keys.map(async (key) => {
+          try {
+            const url = await getPresignedUrl(key);
+            return { key, url };
+          } catch {
+            return { key, url: null };
+          }
+        })
+      );
+      res.json(images);
+    } catch (error) {
+      console.error("Vehicle images fetch error:", error);
+      res.status(500).json({ message: "Fejl ved hentning af billeder." });
+    }
+  });
+
   app.get("/api/r2/status", async (_req, res) => {
     try {
       if (!isR2Configured()) {

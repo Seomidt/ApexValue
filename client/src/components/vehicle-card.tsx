@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,25 @@ import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags } from "@/
 import { ExternalLink, Bookmark, FileText, Eye, Fuel, Gauge, Calendar, Settings2 } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
 import { Link } from "wouter";
+
+interface VehicleImage { key: string; url: string | null; }
+
+function useVehicleThumbnail(vehicle: Vehicle): string {
+  const placeholder = `https://placehold.co/400x250/1a2332/B9D9EB?text=${encodeURIComponent(vehicle.make + ' ' + vehicle.model)}`;
+  const firstKey = vehicle.imageUrls && vehicle.imageUrls.length > 0 ? vehicle.imageUrls[0] : null;
+  const hasR2Key = firstKey && !firstKey.startsWith("http");
+
+  const { data: images } = useQuery<VehicleImage[]>({
+    queryKey: ["/api/vehicles", String(vehicle.id), "images"],
+    enabled: !!hasR2Key,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (!firstKey) return placeholder;
+  if (firstKey.startsWith("http")) return firstKey;
+  const found = images?.find(i => i.key === firstKey);
+  return found?.url || placeholder;
+}
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -22,8 +42,7 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
   const score = v.dealScore || 0;
   const maxBidRoom = maxBid - (v.purchasePrice || 0);
 
-  const placeholderImg = `https://placehold.co/400x250/1a2332/B9D9EB?text=${encodeURIComponent(v.make + ' ' + v.model)}`;
-  const imgSrc = v.imageUrls && v.imageUrls.length > 0 ? v.imageUrls[0] : placeholderImg;
+  const imgSrc = useVehicleThumbnail(v);
 
   return (
     <Card className="overflow-visible group" data-testid={`card-vehicle-${v.id}`}>
