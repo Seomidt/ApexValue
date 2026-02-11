@@ -225,9 +225,9 @@ export default function AuctionFinder() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="diesel">Diesel</SelectItem>
+                  <SelectItem value="diesel">{t("fuel.diesel")}</SelectItem>
                   <SelectItem value="petrol">{t("fuel.petrol")}</SelectItem>
-                  <SelectItem value="hybrid">Hybrid/PHEV</SelectItem>
+                  <SelectItem value="hybrid">{t("fuel.hybrid")}</SelectItem>
                   <SelectItem value="electric">{t("fuel.electric")}</SelectItem>
                 </SelectContent>
               </Select>

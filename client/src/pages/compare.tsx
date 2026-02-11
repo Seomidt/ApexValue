@@ -142,8 +142,8 @@ export default function Compare() {
               <ComparisonRow label={t("common.mileage")} values={selected.map(v => v.mileageKm)} format="number" highlight="min" />
               <ComparisonRow label={t("compare.engine_power")} values={selected.map(v => v.enginePower || null)} format="number" highlight="max" />
               <ComparisonRow label={t("compare.co2")} values={selected.map(v => v.co2 || null)} format="number" highlight="min" />
-              <ComparisonRow label={t("compare.fuel")} values={selected.map(v => v.fuelType === "petrol" ? t("fuel.petrol") : v.fuelType === "electric" ? t("fuel.electric") : v.fuelType || "-")} format="text" />
-              <ComparisonRow label={t("compare.gearbox")} values={selected.map(v => v.gearbox === "automatic" ? t("gearbox.automatic") : v.gearbox === "manual" ? t("gearbox.manual") : v.gearbox || "-")} format="text" />
+              <ComparisonRow label={t("compare.fuel")} values={selected.map(v => v.fuelType ? t(`fuel.${v.fuelType}`) : "-")} format="text" />
+              <ComparisonRow label={t("compare.gearbox")} values={selected.map(v => v.gearbox ? t(`gearbox.${v.gearbox}`) : "-")} format="text" />
               <ComparisonRow label={t("compare.source_country")} values={selected.map(v => v.sourceCountry || "-")} format="text" />
 
               <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.economy")}</td></tr>
@@ -154,7 +154,7 @@ export default function Compare() {
               <ComparisonRow label={t("compare.profit_normal")} values={selected.map(v => calcProfit(v, "normal"))} format="currency" highlight="max" />
               <ComparisonRow label={t("compare.roi")} values={selected.map(v => calcROI(v, "normal"))} format="percent" highlight="max" />
               <ComparisonRow label={t("compare.max_bid")} values={selected.map(v => calcMaxBid(v))} format="currency" highlight="max" />
-              <ComparisonRow label="Deal Score" values={selected.map(v => v.dealScore || 0)} format="number" highlight="max" />
+              <ComparisonRow label={t("compare.deal_score")} values={selected.map(v => v.dealScore || 0)} format="number" highlight="max" />
 
               <tr><td colSpan={selected.length + 1} className="py-1 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-accent/30">{t("compare.risk_assessment")}</td></tr>
               <ComparisonRow label={t("compare.vat_type")} values={selected.map(v => v.vatType === "unknown" ? t("common.unknown") : v.vatType || t("common.unknown"))} format="text" />

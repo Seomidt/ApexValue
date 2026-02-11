@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
-import { formatCurrency, formatNumber } from "@/lib/i18n";
+import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags } from "@/lib/calculations";
 import { ExternalLink, Bookmark, FileText, Eye, Fuel, Gauge, Calendar, Settings2 } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
@@ -35,6 +35,7 @@ interface VehicleCardProps {
 }
 
 export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) {
+  const { t } = useLanguage();
   const totalCost = calcTotalCost(v);
   const profit = calcProfit(v, "normal");
   const roi = calcROI(v, "normal");
@@ -75,8 +76,8 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{v.year}</span>
                 <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{formatNumber(v.mileageKm)} km</span>
-                <span className="flex items-center gap-1"><Settings2 className="w-3 h-3" />{v.gearbox === "automatic" ? "Automatisk" : "Manuel"}</span>
-                <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{v.fuelType === "petrol" ? "Benzin" : v.fuelType === "electric" ? "El" : v.fuelType === "hybrid" ? "Hybrid" : v.fuelType}</span>
+                <span className="flex items-center gap-1"><Settings2 className="w-3 h-3" />{v.gearbox ? t(`gearbox.${v.gearbox}`) : v.gearbox}</span>
+                <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{v.fuelType ? t(`fuel.${v.fuelType}`) : v.fuelType}</span>
               </div>
             </div>
             <DealRecommendationBadge score={score} />
@@ -84,15 +85,15 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div>
-              <span className="text-muted-foreground block">Indkøb</span>
+              <span className="text-muted-foreground block">{t("vehicle.purchase_price")}</span>
               <span className="font-semibold" data-testid={`text-purchase-${v.id}`}>{formatCurrency(v.purchasePrice || 0, v.purchaseCurrency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Est. Salgspris</span>
+              <span className="text-muted-foreground block">{t("compare.est_sale_normal")}</span>
               <span className="font-semibold">{formatCurrency(v.resaleNormal || 0, currency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Fortjeneste</span>
+              <span className="text-muted-foreground block">{t("common.profit")}</span>
               <span className={`font-semibold ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                 {formatCurrency(profit, currency)}
               </span>
@@ -107,11 +108,11 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="text-muted-foreground block">MaxBud</span>
+              <span className="text-muted-foreground block">{t("vehicle.max_bid")}</span>
               <span className="font-semibold">{formatCurrency(maxBid, currency)}</span>
             </div>
             <div>
-              <span className="text-muted-foreground block">Rum til MaxBud</span>
+              <span className="text-muted-foreground block">{t("vehicle.room")} {t("vehicle.max_bid")}</span>
               <span className={`font-semibold ${maxBidRoom >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                 {formatCurrency(maxBidRoom, currency)}
               </span>
@@ -131,13 +132,13 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
           <div className="flex items-center gap-1 mt-auto pt-1">
             <Link href={`/vehicle/${v.id}`}>
               <Button size="sm" variant="ghost" data-testid={`button-view-${v.id}`}>
-                <Eye className="w-3.5 h-3.5 mr-1" /> Detaljer
+                <Eye className="w-3.5 h-3.5 mr-1" /> {t("common.details")}
               </Button>
             </Link>
             {v.sourceUrl && (
               <a href={v.sourceUrl} target="_blank" rel="noopener noreferrer">
                 <Button size="sm" variant="ghost">
-                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Kilde
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> {t("vehicle.open_source")}
                 </Button>
               </a>
             )}

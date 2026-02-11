@@ -71,15 +71,15 @@ const vatTemplates = [
   },
 ];
 
-const registrationTax: Record<string, { labelKey: string; rate: string; detailKey: string }> = {
-  DK: { labelKey: "vat.reg.dk.label", rate: "85-150%", detailKey: "vat.reg.dk.detail" },
-  DE: { labelKey: "vat.reg.de.label", rate: "~0%", detailKey: "vat.reg.de.detail" },
-  NL: { labelKey: "vat.reg.nl.label", rate: "BPM (CO2)", detailKey: "vat.reg.nl.detail" },
-  NO: { labelKey: "vat.reg.no.label", rate: "Vægt+CO2+NOx", detailKey: "vat.reg.no.detail" },
-  SE: { labelKey: "vat.reg.se.label", rate: "Lav", detailKey: "vat.reg.se.detail" },
-  FR: { labelKey: "vat.reg.fr.label", rate: "CO2-baseret", detailKey: "vat.reg.fr.detail" },
-  BE: { labelKey: "vat.reg.be.label", rate: "BIV (regional)", detailKey: "vat.reg.be.detail" },
-  PL: { labelKey: "vat.reg.pl.label", rate: "Akcyza 3.1-18.6%", detailKey: "vat.reg.pl.detail" },
+const registrationTax: Record<string, { labelKey: string; rateKey: string; detailKey: string }> = {
+  DK: { labelKey: "vat.reg.dk.label", rateKey: "vat.reg.dk.rate", detailKey: "vat.reg.dk.detail" },
+  DE: { labelKey: "vat.reg.de.label", rateKey: "vat.reg.de.rate", detailKey: "vat.reg.de.detail" },
+  NL: { labelKey: "vat.reg.nl.label", rateKey: "vat.reg.nl.rate", detailKey: "vat.reg.nl.detail" },
+  NO: { labelKey: "vat.reg.no.label", rateKey: "vat.reg.no.rate", detailKey: "vat.reg.no.detail" },
+  SE: { labelKey: "vat.reg.se.label", rateKey: "vat.reg.se.rate", detailKey: "vat.reg.se.detail" },
+  FR: { labelKey: "vat.reg.fr.label", rateKey: "vat.reg.fr.rate", detailKey: "vat.reg.fr.detail" },
+  BE: { labelKey: "vat.reg.be.label", rateKey: "vat.reg.be.rate", detailKey: "vat.reg.be.detail" },
+  PL: { labelKey: "vat.reg.pl.label", rateKey: "vat.reg.pl.rate", detailKey: "vat.reg.pl.detail" },
 };
 
 export default function VatTax() {
@@ -192,7 +192,7 @@ export default function VatTax() {
             <div key={code} className="p-3 rounded-md border space-y-1" data-testid={`card-regtax-${code}`}>
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold text-sm">{t(info.labelKey)}</p>
-                <Badge variant="outline" className="text-xs">{info.rate}</Badge>
+                <Badge variant="outline" className="text-xs">{t(info.rateKey)}</Badge>
               </div>
               <p className="text-muted-foreground">{t(info.detailKey)}</p>
             </div>

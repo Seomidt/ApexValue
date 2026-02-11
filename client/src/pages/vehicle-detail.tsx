@@ -161,7 +161,7 @@ export default function VehicleDetail() {
                 <StatRow label={t("vehicle.variant")} value={v.variant || "N/A"} />
                 <StatRow label={t("common.year")} value={String(v.year)} />
                 <StatRow label={t("common.mileage")} value={`${formatNumber(v.mileageKm)} km`} />
-                <StatRow label={t("vehicle.engine_power")} value={v.enginePower ? `${v.enginePower} hk` : "N/A"} />
+                <StatRow label={t("vehicle.engine_power")} value={v.enginePower ? `${v.enginePower} ${t("common.hp")}` : "N/A"} />
                 <StatRow label={t("vehicle.co2")} value={v.co2 ? `${v.co2} g/km` : "N/A"} />
                 <StatRow label={t("compare.gearbox")} value={gearLabel} />
                 <StatRow label={t("compare.fuel")} value={fuelLabel} />
@@ -340,7 +340,7 @@ export default function VehicleDetail() {
             <Separator className="my-3" />
             <div className="text-xs text-muted-foreground space-y-1">
               <p>{t("common.status")}: <Badge variant="outline" className="text-xs ml-1">{t(`status.${v.status}`)}</Badge></p>
-              <p>{t("vehicle.created")}: {v.createdAt ? new Date(v.createdAt).toLocaleDateString("da-DK") : "N/A"}</p>
+              <p>{t("vehicle.created")}: {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "N/A"}</p>
             </div>
           </Card>
         </TabsContent>

@@ -12,7 +12,7 @@ import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getDealRecommendation, 
 import { FileText, Download, Clock, BarChart3, TrendingUp, AlertTriangle, FileDown, Printer, Globe, Activity } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
 
-async function generatePDF(vehicle: Vehicle) {
+async function generatePDF(vehicle: Vehicle, t: (key: string) => string) {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF();
 
@@ -36,9 +36,9 @@ async function generatePDF(vehicle: Vehicle) {
   doc.text("ApexValue", 14, 16);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Forhandler Investeringsrapport", 14, 23);
+  doc.text(t("pdf.subtitle"), 14, 23);
   doc.setFontSize(7);
-  doc.text(`Genereret: ${new Date().toLocaleDateString("da-DK")}`, 14, 30);
+  doc.text(`${t("pdf.generated")}: ${new Date().toLocaleDateString()}`, 14, 30);
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
@@ -71,48 +71,48 @@ async function generatePDF(vehicle: Vehicle) {
     y += 5.5;
   };
 
-  sectionHeader("Biloplysninger");
-  row("Aargang / Kilometer", `${vehicle.year} / ${formatNumber(vehicle.mileageKm)} km`);
-  row("Motoreffekt", `${vehicle.enginePower || "-"} hk`);
-  row("CO2 Udledning", `${vehicle.co2 || "-"} g/km`);
-  row("Kildeland", vehicle.sourceCountry || "N/A");
-  row("Momstype", vehicle.vatType || "Ukendt");
+  sectionHeader(t("pdf.vehicle_info"));
+  row(t("pdf.year_km"), `${vehicle.year} / ${formatNumber(vehicle.mileageKm)} km`);
+  row(t("pdf.engine_power"), `${vehicle.enginePower || "-"} ${t("common.hp")}`);
+  row(t("pdf.co2_emission"), `${vehicle.co2 || "-"} g/km`);
+  row(t("pdf.source_country"), vehicle.sourceCountry || "N/A");
+  row(t("pdf.vat_type"), vehicle.vatType || t("common.unknown"));
   y += 4;
 
-  sectionHeader("Omkostningsspecifikation");
-  row("Indkoebspris", formatCurrency(vehicle.purchasePrice || 0, "DKK"));
-  row("Auktionsgebyr", formatCurrency(vehicle.auctionFees || 0, "DKK"));
-  row("Transport", formatCurrency(vehicle.transportCost || 0, "DKK"));
-  row("Klargoering", formatCurrency(vehicle.preparationCost || 0, "DKK"));
-  row("Syn/Inspektion", formatCurrency(vehicle.inspectionCost || 0, "DKK"));
-  row("Oevrigt", formatCurrency(vehicle.otherCosts || 0, "DKK"));
-  row("Registreringsafgift", formatCurrency(vehicle.registrationTax || 0, "DKK"));
-  row("Momsrefusion", `-${formatCurrency(vehicle.vatReturn || 0, "DKK")}`);
+  sectionHeader(t("pdf.cost_spec"));
+  row(t("pdf.purchase_price"), formatCurrency(vehicle.purchasePrice || 0, "DKK"));
+  row(t("pdf.auction_fee"), formatCurrency(vehicle.auctionFees || 0, "DKK"));
+  row(t("pdf.transport"), formatCurrency(vehicle.transportCost || 0, "DKK"));
+  row(t("pdf.preparation"), formatCurrency(vehicle.preparationCost || 0, "DKK"));
+  row(t("pdf.inspection"), formatCurrency(vehicle.inspectionCost || 0, "DKK"));
+  row(t("pdf.other"), formatCurrency(vehicle.otherCosts || 0, "DKK"));
+  row(t("pdf.reg_tax"), formatCurrency(vehicle.registrationTax || 0, "DKK"));
+  row(t("pdf.vat_return"), `-${formatCurrency(vehicle.vatReturn || 0, "DKK")}`);
   doc.setDrawColor(200, 200, 200);
   doc.line(20, y - 2, 180, y - 2);
-  row("Totale Omkostninger", formatCurrency(totalCost, "DKK"), true);
+  row(t("pdf.total_costs"), formatCurrency(totalCost, "DKK"), true);
   y += 4;
 
-  sectionHeader("Videresalg & Profitanalyse");
-  row("Salgspris (Konservativ)", formatCurrency(vehicle.resaleConservative || 0, "DKK"));
-  row("Salgspris (Normal)", formatCurrency(vehicle.resaleNormal || 0, "DKK"));
-  row("Salgspris (Optimistisk)", formatCurrency(vehicle.resaleOptimistic || 0, "DKK"));
+  sectionHeader(t("pdf.resale_profit"));
+  row(t("pdf.sale_conservative"), formatCurrency(vehicle.resaleConservative || 0, "DKK"));
+  row(t("pdf.sale_normal"), formatCurrency(vehicle.resaleNormal || 0, "DKK"));
+  row(t("pdf.sale_optimistic"), formatCurrency(vehicle.resaleOptimistic || 0, "DKK"));
   y += 2;
-  row("Fortjeneste (Konservativ)", formatCurrency(profitConservative, "DKK"));
-  row("Fortjeneste (Normal)", formatCurrency(profitNormal, "DKK"), true);
-  row("Fortjeneste (Optimistisk)", formatCurrency(profitOptimistic, "DKK"));
-  row("ROI (Normal)", `${roi.toFixed(1)}%`, true);
-  row("MaxBud (@ 15K maal)", formatCurrency(maxBid, "DKK"));
+  row(t("pdf.profit_conservative"), formatCurrency(profitConservative, "DKK"));
+  row(t("pdf.profit_normal"), formatCurrency(profitNormal, "DKK"), true);
+  row(t("pdf.profit_optimistic"), formatCurrency(profitOptimistic, "DKK"));
+  row(t("pdf.roi_normal"), `${roi.toFixed(1)}%`, true);
+  row(t("pdf.max_bid"), formatCurrency(maxBid, "DKK"));
   y += 4;
 
-  const recLabels: Record<string, string> = { buy: "KOEB", consider: "OVERVEJ", drop: "DROP" };
-  sectionHeader("Vurdering");
+  const recLabels: Record<string, string> = { buy: t("common.buy"), consider: t("common.consider"), drop: t("common.drop") };
+  sectionHeader(t("pdf.assessment"));
   row("Deal Score", `${vehicle.dealScore || 0} / 100`, true);
-  row("Anbefaling", recLabels[recommendation] || recommendation.toUpperCase(), true);
+  row(t("pdf.recommendation"), recLabels[recommendation] || recommendation.toUpperCase(), true);
   if (risks.length > 0) {
-    row("Risikoflag", risks.join(", "));
+    row(t("pdf.risk_flags"), risks.join(", "));
   } else {
-    row("Risikoflag", "Ingen identificeret");
+    row(t("pdf.risk_flags"), t("pdf.no_risks"));
   }
 
   y += 10;
@@ -120,8 +120,8 @@ async function generatePDF(vehicle: Vehicle) {
   doc.rect(14, y, 182, 14, "F");
   doc.setFontSize(7);
   doc.setTextColor(130, 130, 130);
-  doc.text("Denne rapport er genereret af ApexValue i Demo Mode. Data er illustrativt og boer ikke bruges til endelige investeringsbeslutninger.", 20, y + 5);
-  doc.text("For produktionsrapporter med reelle markedsdata, aktiver Live Mode med dine API-noegler.", 20, y + 10);
+  doc.text(t("pdf.disclaimer1"), 20, y + 5);
+  doc.text(t("pdf.disclaimer2"), 20, y + 10);
 
   doc.save(`ApexValue_${vehicle.make}_${vehicle.model}_${vehicle.year}_Rapport.pdf`);
 }
@@ -154,7 +154,7 @@ export default function Reports() {
 
     setGeneratingId(id);
     try {
-      await generatePDF(vehicle);
+      await generatePDF(vehicle, t);
       setGeneratedReports(prev => [{
         vehicleId: vehicle.id,
         make: vehicle.make,
@@ -341,7 +341,7 @@ export default function Reports() {
           <Card className="p-3 flex items-start gap-2 bg-accent/50 mb-4">
             <Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
             <div className="text-sm">
-              <p className="font-medium">Demo Mode</p>
+              <p className="font-medium">{t("reports.demo_mode_label")}</p>
               <p className="text-muted-foreground text-xs mt-0.5">
                 {t("reports.demo_note")}
               </p>
@@ -359,7 +359,7 @@ export default function Reports() {
                 <SelectContent>
                   {allVehicles.map(v => (
                     <SelectItem key={v.id} value={String(v.id)}>
-                      {v.make} {v.model} {v.year} (Score: {v.dealScore || 0})
+                      {v.make} {v.model} {v.year} ({t("common.score")}: {v.dealScore || 0})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -379,7 +379,7 @@ export default function Reports() {
                 onClick={async () => {
                   const hotDealVehicles = allVehicles.filter(v => (v.dealScore || 0) >= 70);
                   for (const v of hotDealVehicles) {
-                    await generatePDF(v);
+                    await generatePDF(v, t);
                   }
                   toast({ title: t("reports.batch_done"), description: t("reports.batch_count").replace("{count}", String(hotDealVehicles.length)) });
                 }}
@@ -392,7 +392,7 @@ export default function Reports() {
                 data-testid="button-export-all"
                 onClick={async () => {
                   for (const v of allVehicles.slice(0, 5)) {
-                    await generatePDF(v);
+                    await generatePDF(v, t);
                   }
                   toast({ title: t("reports.export_started"), description: t("reports.export_first5") });
                 }}
@@ -420,14 +420,14 @@ export default function Reports() {
                     <tr key={i} className="border-b last:border-0">
                       <td className="p-3 text-xs font-medium">{r.make} {r.model} {r.year}</td>
                       <td className="p-3 text-xs text-center tabular-nums font-semibold text-[#FF6319]">{r.dealScore}</td>
-                      <td className="p-3 text-xs text-muted-foreground">{r.generatedAt.toLocaleString("da-DK")}</td>
+                      <td className="p-3 text-xs text-muted-foreground">{r.generatedAt.toLocaleString()}</td>
                       <td className="p-3 text-right">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => {
                             const v = allVehicles.find(v => v.id === r.vehicleId);
-                            if (v) generatePDF(v);
+                            if (v) generatePDF(v, t);
                           }}
                           data-testid={`button-regenerate-${i}`}
                         >

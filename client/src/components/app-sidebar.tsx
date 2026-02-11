@@ -133,7 +133,7 @@ export function AppSidebar() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium truncate" data-testid="text-username">
-                {user.firstName || user.email || "Bruger"}
+                {user.firstName || user.email || t("common.user")}
               </p>
             </div>
           </div>
