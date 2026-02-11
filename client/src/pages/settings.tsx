@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { MARKET_COUNTRIES } from "@shared/schema";
+import { useLanguage, LANGUAGE_LABELS, type SupportedLanguage } from "@/lib/i18n";
 
 const CONNECTORS = [
   { name: "mobile.de API", desc: "Markedssammenligninger og bilsøgning fra Tysklands største markedsplads", key: "MOBILE_DE", category: "market" },
@@ -229,15 +230,15 @@ export default function Settings() {
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
   const [testingKeys, setTestingKeys] = useState<Set<string>>(new Set());
 
+  const { language: currentLanguage, setLanguage: setGlobalLanguage } = useLanguage();
   const savedMarket = localStorage.getItem("apexvalue_market") || "DK";
-  const savedLanguage = localStorage.getItem("apexvalue_language") || "da";
   const [marketCountry, setMarketCountry] = useState(savedMarket);
-  const [language, setLanguage] = useState(savedLanguage);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(currentLanguage);
   const [orgDirty, setOrgDirty] = useState(false);
 
   const handleSaveOrgSettings = () => {
     localStorage.setItem("apexvalue_market", marketCountry);
-    localStorage.setItem("apexvalue_language", language);
+    setGlobalLanguage(selectedLanguage as SupportedLanguage);
     setOrgDirty(false);
     toast({ title: "Indstillinger gemt", description: "Dine organisationsindstillinger er blevet gemt." });
   };
@@ -348,19 +349,14 @@ export default function Settings() {
               </div>
               <div>
                 <Label className="text-xs">Sprog</Label>
-                <Select value={language} onValueChange={(v) => { setLanguage(v); setOrgDirty(true); }}>
+                <Select value={selectedLanguage} onValueChange={(v) => { setSelectedLanguage(v); setOrgDirty(true); }}>
                   <SelectTrigger data-testid="select-language">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="da">Dansk</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="de">Deutsch</SelectItem>
-                    <SelectItem value="nl">Nederlands</SelectItem>
-                    <SelectItem value="sv">Svenska</SelectItem>
-                    <SelectItem value="no">Norsk</SelectItem>
-                    <SelectItem value="pl">Polski</SelectItem>
-                    <SelectItem value="fr">Fran\u00e7ais</SelectItem>
+                    {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      <SelectItem key={code} value={code}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

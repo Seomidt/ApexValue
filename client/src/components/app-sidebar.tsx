@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, Receipt, Layers, Settings,
-  FileText, LogOut, Sun, Moon, ChevronDown, GitCompareArrows, Shield
+  FileText, LogOut, Sun, Moon, GitCompareArrows, Shield
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel,
@@ -12,26 +12,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
+import { useLanguage } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import logoPath from "@assets/image_1770805863097.png";
-
-const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Auktionssøger", url: "/auction-finder", icon: Search },
-  { title: "Pipeline", url: "/pipeline", icon: GitBranch },
-  { title: "Sammenlign", url: "/compare", icon: GitCompareArrows },
-  { title: "Moms & Afgift", url: "/vat-tax", icon: Receipt },
-  { title: "Omkostninger", url: "/cost-templates", icon: Layers },
-  { title: "Rapporter", url: "/reports", icon: FileText },
-];
-
-const settingsItem = { title: "Indstillinger", url: "/settings", icon: Settings };
-const adminItem = { title: "Admin", url: "/admin", icon: Shield };
 
 export function AppSidebar() {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { title: t("nav.dashboard"), url: "/", icon: LayoutDashboard },
+    { title: t("nav.auction_finder"), url: "/auction-finder", icon: Search },
+    { title: t("nav.pipeline"), url: "/pipeline", icon: GitBranch },
+    { title: t("nav.compare"), url: "/compare", icon: GitCompareArrows },
+    { title: t("nav.vat_tax"), url: "/vat-tax", icon: Receipt },
+    { title: t("nav.cost_templates"), url: "/cost-templates", icon: Layers },
+    { title: t("nav.reports"), url: "/reports", icon: FileText },
+  ];
+
+  const settingsItem = { title: t("nav.settings"), url: "/settings", icon: Settings };
+  const adminItem = { title: t("nav.admin"), url: "/admin", icon: Shield };
 
   const isActive = (url: string) => {
     if (url === "/") return location === "/";
@@ -49,7 +51,7 @@ export function AppSidebar() {
         <div className="mt-3 flex items-center gap-2">
           <Badge variant="outline" className="text-xs" data-testid="badge-mode">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-chart-3 mr-1.5" />
-            Demo
+            {t("mode.demo")}
           </Badge>
         </div>
       </SidebarHeader>
@@ -60,9 +62,9 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild data-active={isActive(item.url)}>
-                    <Link href={item.url} data-testid={`link-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Link href={item.url} data-testid={`link-nav-${item.url.replace(/\//g, '') || 'dashboard'}`}>
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -89,7 +91,7 @@ export function AppSidebar() {
               )}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild data-active={isActive(settingsItem.url)}>
-                  <Link href={settingsItem.url} data-testid="link-nav-indstillinger">
+                  <Link href={settingsItem.url} data-testid="link-nav-settings">
                     <settingsItem.icon className="w-4 h-4" />
                     <span>{settingsItem.title}</span>
                   </Link>

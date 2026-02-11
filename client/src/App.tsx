@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useCallback } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { LogIn, Zap } from "lucide-react";
+import { LanguageContext, setLanguage as setI18nLanguage, getLanguage, t as i18nT, type SupportedLanguage } from "@/lib/i18n";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -145,15 +146,23 @@ function AppContent() {
 
 function App() {
   const [mode, setMode] = useState<AppMode>("demo");
+  const [language, setLanguageState] = useState<SupportedLanguage>(getLanguage());
+
+  const handleSetLanguage = useCallback((lang: SupportedLanguage) => {
+    setI18nLanguage(lang);
+    setLanguageState(lang);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <ModeContext.Provider value={{ mode, setMode }}>
-            <Toaster />
-            <AppContent />
-          </ModeContext.Provider>
+          <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t: i18nT }}>
+            <ModeContext.Provider value={{ mode, setMode }}>
+              <Toaster />
+              <AppContent />
+            </ModeContext.Provider>
+          </LanguageContext.Provider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
