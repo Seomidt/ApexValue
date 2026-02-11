@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, Receipt, Layers, Settings,
-  FileText, LogOut, Sun, Moon, ChevronDown
+  FileText, LogOut, Sun, Moon, ChevronDown, GitCompareArrows, Shield
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel,
@@ -19,12 +19,14 @@ const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Auction Finder", url: "/auction-finder", icon: Search },
   { title: "Pipeline", url: "/pipeline", icon: GitBranch },
+  { title: "Compare", url: "/compare", icon: GitCompareArrows },
   { title: "VAT & Tax", url: "/vat-tax", icon: Receipt },
   { title: "Cost Templates", url: "/cost-templates", icon: Layers },
   { title: "Reports", url: "/reports", icon: FileText },
 ];
 
 const bottomItems = [
+  { title: "Admin", url: "/admin", icon: Shield },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

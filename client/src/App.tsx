@@ -1,3 +1,4 @@
+import { useState, createContext, useContext } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
+import { LogIn, Zap } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -21,6 +22,12 @@ import VatTax from "@/pages/vat-tax";
 import CostTemplates from "@/pages/cost-templates";
 import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
+import Compare from "@/pages/compare";
+import Admin from "@/pages/admin";
+
+type AppMode = "demo" | "live";
+const ModeContext = createContext<{ mode: AppMode; setMode: (m: AppMode) => void }>({ mode: "demo", setMode: () => {} });
+export const useAppMode = () => useContext(ModeContext);
 
 function AppRouter() {
   return (
@@ -32,9 +39,49 @@ function AppRouter() {
       <Route path="/vat-tax" component={VatTax} />
       <Route path="/cost-templates" component={CostTemplates} />
       <Route path="/reports" component={Reports} />
+      <Route path="/compare" component={Compare} />
+      <Route path="/admin" component={Admin} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function ModeToggle() {
+  const { mode, setMode } = useAppMode();
+  const { user } = useAuth();
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center rounded-md border bg-card p-0.5" data-testid="toggle-mode">
+        <button
+          className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${mode === "demo" ? "bg-[#FF6319] text-white" : "text-muted-foreground"}`}
+          onClick={() => setMode("demo")}
+          data-testid="button-mode-demo"
+        >
+          Demo
+        </button>
+        <button
+          className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${mode === "live" ? "bg-emerald-500 text-white" : "text-muted-foreground"}`}
+          onClick={() => {
+            if (!user) {
+              window.location.href = "/api/login";
+              return;
+            }
+            setMode("live");
+          }}
+          data-testid="button-mode-live"
+        >
+          <Zap className="w-3 h-3 inline mr-0.5" />
+          Live
+        </button>
+      </div>
+      {mode === "live" && (
+        <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+          Connected
+        </Badge>
+      )}
+    </div>
   );
 }
 
@@ -55,10 +102,7 @@ function MainLayout() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs" data-testid="badge-demo-mode">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-chart-3 mr-1.5" />
-                Demo Mode
-              </Badge>
+              <ModeToggle />
               {!user && (
                 <a href="/api/login">
                   <Button size="sm" variant="outline" data-testid="button-header-login">
@@ -100,12 +144,16 @@ function AppContent() {
 }
 
 function App() {
+  const [mode, setMode] = useState<AppMode>("demo");
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <Toaster />
-          <AppContent />
+          <ModeContext.Provider value={{ mode, setMode }}>
+            <Toaster />
+            <AppContent />
+          </ModeContext.Provider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,140 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { Settings as SettingsIcon, User, Building2, Users, Key, HardDrive, Globe } from "lucide-react";
+import { useAppMode } from "@/App";
+import { useToast } from "@/hooks/use-toast";
+import { Settings as SettingsIcon, User, Building2, Users, Key, HardDrive, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 import { MARKET_COUNTRIES } from "@shared/schema";
+
+const CONNECTORS = [
+  { name: "mobile.de API", desc: "Market comparisons and vehicle search from Germany's largest marketplace", key: "MOBILE_DE", category: "market" },
+  { name: "AutoScout24 API", desc: "Pan-European vehicle listings and market data", key: "AUTOSCOUT24", category: "market" },
+  { name: "BCA Auctions", desc: "European wholesale auction platform integration", key: "BCA", category: "auction" },
+  { name: "Auto1 / wkda", desc: "European vehicle purchasing and remarketing", key: "AUTO1", category: "auction" },
+  { name: "ASG Digital", desc: "Registration tax calculation (Denmark SKAT integration)", key: "ASG", category: "tax" },
+  { name: "DMR API", desc: "Danish Motor Registry (Motorregistret) vehicle lookup", key: "DMR", category: "tax" },
+  { name: "Bilinfo", desc: "Listing distribution to Danish market (bilbasen.dk)", key: "BILINFO", category: "listing" },
+  { name: "Cloudflare R2", desc: "Object storage for vehicle images and documents", key: "R2", category: "storage" },
+];
+
+function ConnectorCard({ connector, isConfigured, onConfigure }: {
+  connector: typeof CONNECTORS[0];
+  isConfigured: boolean;
+  onConfigure: (key: string) => void;
+}) {
+  const { mode } = useAppMode();
+  const isDemo = mode === "demo";
+
+  return (
+    <div className="flex items-center justify-between gap-3 p-3 rounded-md border" data-testid={`connector-${connector.key}`}>
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{connector.name}</p>
+        <p className="text-xs text-muted-foreground">{connector.desc}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {isConfigured ? (
+          <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Connected
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs">
+            <XCircle className="w-3 h-3 mr-1" /> Not configured
+          </Badge>
+        )}
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isDemo}
+          onClick={() => onConfigure(connector.key)}
+          data-testid={`button-configure-${connector.key}`}
+        >
+          Configure
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string; onClose: () => void; onSave: (key: string) => void }) {
+  const [showKey, setShowKey] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [apiSecret, setApiSecret] = useState("");
+  const { toast } = useToast();
+
+  const connector = CONNECTORS.find(c => c.key === connectorKey);
+
+  return (
+    <Card className="p-4 space-y-3 border-primary/30">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold flex items-center gap-2">
+          <Key className="w-4 h-4" /> Configure {connector?.name}
+        </h4>
+        <Button size="sm" variant="ghost" onClick={onClose} data-testid="button-cancel-dialog">Cancel</Button>
+      </div>
+      <div className="space-y-2">
+        <div>
+          <Label className="text-xs">API Key</Label>
+          <div className="relative">
+            <Input
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Enter API key..."
+              data-testid={`input-api-key-${connectorKey}`}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="absolute right-1 top-1/2 -translate-y-1/2"
+              onClick={() => setShowKey(!showKey)}
+              data-testid="button-toggle-key-visibility"
+            >
+              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">API Secret (optional)</Label>
+          <Input
+            type="password"
+            value={apiSecret}
+            onChange={(e) => setApiSecret(e.target.value)}
+            placeholder="Enter API secret..."
+            data-testid={`input-api-secret-${connectorKey}`}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Shield className="w-3.5 h-3.5" />
+        <span>Keys are encrypted and stored securely per organization.</span>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          onClick={() => {
+            onSave(connectorKey);
+            toast({ title: "API Key saved", description: `${connector?.name} credentials have been saved.` });
+            onClose();
+          }}
+          data-testid={`button-save-key-${connectorKey}`}
+        >
+          Save Credentials
+        </Button>
+        <Button size="sm" variant="outline" onClick={onClose} data-testid="button-cancel-save">Cancel</Button>
+      </div>
+    </Card>
+  );
+}
 
 export default function Settings() {
   const { user } = useAuth();
+  const { mode } = useAppMode();
+  const [configuring, setConfiguring] = useState<string | null>(null);
+  const [configuredKeys, setConfiguredKeys] = useState<Set<string>>(new Set());
+
+  const handleSaveKey = (key: string) => {
+    setConfiguredKeys(prev => new Set([...prev, key]));
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-4">
@@ -121,33 +251,64 @@ export default function Settings() {
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">API Integrations (BYOK)</h3>
-              <Badge variant="outline" className="text-xs">Demo Mode</Badge>
+              <Badge variant="outline" className={`text-xs ${mode === "live" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : ""}`}>
+                {mode === "demo" ? "Demo Mode" : "Live Mode"}
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               Bring Your Own Keys (BYOK): Enter your API credentials to enable live data.
               Keys are encrypted and stored securely per organization.
+              {mode === "demo" && " Switch to Live Mode to configure integrations."}
             </p>
             <Separator />
 
-            <div className="space-y-3">
-              {[
-                { name: "mobile.de API", desc: "Market comparisons and vehicle search", key: "MOBILE_DE" },
-                { name: "ASG Digital", desc: "Registration tax calculation (Denmark)", key: "ASG" },
-                { name: "Bilinfo", desc: "Listing distribution (Denmark)", key: "BILINFO" },
-              ].map((integration) => (
-                <div key={integration.key} className="flex items-center justify-between gap-3 p-3 rounded-md border">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{integration.name}</p>
-                    <p className="text-xs text-muted-foreground">{integration.desc}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge variant="outline" className="text-xs">Not configured</Badge>
-                    <Button size="sm" variant="outline" disabled data-testid={`button-configure-${integration.key}`}>
-                      Configure
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            {configuring && (
+              <APIKeyDialog connectorKey={configuring} onClose={() => setConfiguring(null)} onSave={handleSaveKey} />
+            )}
+
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Market Data</h4>
+              <div className="space-y-2">
+                {CONNECTORS.filter(c => c.category === "market").map(c => (
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Auction Platforms</h4>
+              <div className="space-y-2">
+                {CONNECTORS.filter(c => c.category === "auction").map(c => (
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tax & Registration</h4>
+              <div className="space-y-2">
+                {CONNECTORS.filter(c => c.category === "tax").map(c => (
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Listing & Distribution</h4>
+              <div className="space-y-2">
+                {CONNECTORS.filter(c => c.category === "listing").map(c => (
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Storage</h4>
+              <div className="space-y-2">
+                {CONNECTORS.filter(c => c.category === "storage").map(c => (
+                  <ConnectorCard key={c.key} connector={c} isConfigured={configuredKeys.has(c.key)} onConfigure={setConfiguring} />
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
