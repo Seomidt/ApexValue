@@ -452,6 +452,84 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/vehicles/:id/ai-analysis", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicle(vehicleId);
+      if (!vehicle) {
+        return res.status(404).json({ message: "Vehicle not found" });
+      }
+
+      const comps = await storage.getMarketComps(vehicleId);
+      const lang = (req.body.language as string) || "da";
+
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ message: "OpenAI API key not configured" });
+      }
+
+      const OpenAI = (await import("openai")).default;
+      const openai = new OpenAI({ apiKey });
+
+      const totalCost = (vehicle.purchasePrice || 0) + (vehicle.auctionFees || 0) + (vehicle.transportCost || 0) + (vehicle.preparationCost || 0) + (vehicle.inspectionCost || 0) + (vehicle.otherCosts || 0) + (vehicle.registrationTax || 0) - (vehicle.vatReturn || 0);
+      const profitNormal = (vehicle.resaleNormal || 0) - totalCost;
+      const roi = totalCost > 0 ? (profitNormal / totalCost) * 100 : 0;
+
+      const compsText = comps.slice(0, 10).map((c, i) =>
+        `${i + 1}. ${c.make} ${c.model} ${c.variant || ""} ${c.year} - ${c.mileageKm} km - ${c.price} ${c.currency} (${c.source}, ${c.location || "N/A"})`
+      ).join("\n");
+
+      const langMap: Record<string, string> = {
+        da: "Danish", en: "English", de: "German", nl: "Dutch", sv: "Swedish", no: "Norwegian", pl: "Polish", fr: "French"
+      };
+
+      const prompt = `You are a senior automotive market analyst specializing in European B2B car trading. Write a professional investment analysis conclusion for this vehicle.
+
+Vehicle: ${vehicle.make} ${vehicle.model} ${vehicle.variant || ""} ${vehicle.year}
+VIN: ${vehicle.vin || "N/A"}
+Mileage: ${vehicle.mileageKm} km
+Engine: ${vehicle.enginePower || "N/A"} HP, ${vehicle.fuelType}, ${vehicle.gearbox}
+CO2: ${vehicle.co2 || "N/A"} g/km
+Source Country: ${vehicle.sourceCountry}
+VAT Type: ${vehicle.vatType}
+
+Financial Summary:
+- Purchase Price: ${vehicle.purchasePrice} ${vehicle.purchaseCurrency}
+- Registration Tax: ${vehicle.registrationTax || "N/A"} DKK
+- Total Investment Cost: ${totalCost.toFixed(0)} DKK
+- Expected Resale (Conservative): ${vehicle.resaleConservative || "N/A"} DKK
+- Expected Resale (Normal): ${vehicle.resaleNormal || "N/A"} DKK
+- Expected Resale (Optimistic): ${vehicle.resaleOptimistic || "N/A"} DKK
+- Expected Profit (Normal): ${profitNormal.toFixed(0)} DKK
+- ROI: ${roi.toFixed(1)}%
+- Deal Score: ${vehicle.dealScore || 0}/100
+
+Market Comparables (${comps.length} found):
+${compsText || "No comparables available"}
+
+Write the analysis in ${langMap[lang] || "Danish"}. Structure it in 3-4 paragraphs:
+1. Market Position: How this vehicle sits in the current market based on comparables
+2. Financial Assessment: Why the numbers (profit, ROI, costs) look the way they do
+3. Risk Factors: What risks exist and how they affect the valuation
+4. Recommendation: Clear buy/consider/pass recommendation with reasoning
+
+Be specific with numbers. Keep it professional but accessible. Maximum 400 words.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 800,
+        temperature: 0.7,
+      });
+
+      const analysis = completion.choices[0]?.message?.content || "";
+      res.json({ analysis });
+    } catch (error: any) {
+      console.error("Error generating AI analysis:", error);
+      res.status(500).json({ message: error?.message || "Failed to generate AI analysis" });
+    }
+  });
+
   await seedDemoData();
 
   return httpServer;
