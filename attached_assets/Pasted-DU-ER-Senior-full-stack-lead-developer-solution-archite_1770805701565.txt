@@ -1,0 +1,571 @@
+DU ER: Senior full-stack lead developer + solution architect.
+OPGAVE: Byg ApexValue som en production-grade, multi-tenant SaaS webapp (MVP→V3) i Replit.
+Krav: Appen skal kunne køre fuldt i Demo Mode uden API keys, og senere i Live Mode med BYOK API keys (kundens egne keys). Den skal bygges portabelt (stateless app, env vars, docker-ready), så den senere kan flyttes fra Replit til anden hosting uden omskrivning.
+
+=====================================================================
+0) Produkt og brand
+=====================================================================
+Navn: ApexValue
+Formål: Et B2B værktøj til bilindkøb, vurdering, import/export, markedsanalyse, registreringsafgift/moms/omkostninger, max-bid anbefaling, deal score, pipeline, dokumentcenter og generering af professionelle PDF rapporter med forventet afkast.
+
+Designstil: “Gulf Racing Livery / racing cockpit / trading dashboard”
+Farver:
+- Powder Blue: #B9D9EB
+- Gulf Orange: #FF6319 (alt. #FF671F)
+- Gulf Dark Blue: #002776
+
+UI-principper:
+- Data-first, hurtig scanning, cards + tabeller, cockpit feel
+- Orange kun til primære CTA/badges (sparsomt)
+- Dark Blue til topbar + sidebar, Powder Blue til highlights/card headers
+- Tabeller med zebra shading (meget lys blå), stærk filtrering/sortering
+- Responsivt layout (desktop først)
+
+Logo:
+- Brug ApexValue logo (transparent PNG) + favicon (shield)
+- Ingen baggrund på logo, klar til dark/light UI
+
+=====================================================================
+1) Markeder og sprog (top 8 lande først)
+=====================================================================
+Top 8 market countries (første wave):
+1) Germany (DE)
+2) Denmark (DK)
+3) Netherlands (NL)
+4) Sweden (SE)
+5) Norway (NO)
+6) Poland (PL)
+7) Belgium (BE)
+8) France (FR)
+
+VIGTIGT: Land (Market Country) ≠ Sprog.
+Implementér fra start:
+- Market Country: styrer regler, valuta, data-kilder, import/export flows
+- Language (UI + PDF): styrer labels/tekster, fallback
+- English fallback ALTID (hvis en tekst mangler på valgt sprog)
+
+Sprog roadmap:
+- Fra start: English + Danish (minimum)
+- Klar struktur til at tilføje: German, Polish, French, Dutch, Swedish, Norwegian senere uden kodeændringer (kun translation files).
+
+Locale-formatering:
+- Valutaformat pr market (DKK/EUR/PLN/SEK/NOK)
+- Datoformat pr locale
+- Talformat (decimal/tusindtalsseparator)
+
+=====================================================================
+2) Modes: Demo Mode vs Live Mode (super vigtigt)
+=====================================================================
+Free-plan = Demo Mode (ingen API keys nødvendige, ingen real data).
+Demo Mode skal:
+- Vise demo-biler (seed dataset, realistiske cases)
+- Vise demo auktion listings
+- Vise demo “similar cars” comps
+- Lade brugeren prøve alle flows: filters, deal score, max bid, pipeline, PDF generation (demo PDF), dokumentcenter (demo)
+- Være read-only eller sandbox (ændringer gemmes ikke permanent)
+
+Live Mode (Pro/Team) = rigtige data + BYOK keys.
+- Brugeren/Org Admin kan indtaste egne API keys i “Settings > Integrations”
+- Appen bruger kun kundens egne keys (BYOK), ikke dine.
+- Hvis der ikke er keys, falder systemet tilbage til Demo eller begrænset funktion med tydelig UI.
+
+UI:
+- I topbar vis “Mode: Demo / Live”
+- Free låst til Demo
+- Paid kan skifte (hvis deres integrationer er sat op)
+
+=====================================================================
+3) Login, multi-tenant og roller (fra start)
+=====================================================================
+Auth:
+- Email + password login
+- Password reset
+- (Optional V1) email verification
+
+Multi-tenant:
+- Organization (firma) som betaler/har data
+- Users tilknyttes org via membership
+
+Roller (RBAC):
+- SuperAdmin (dig) — platform admin, kan se/styre alt
+- OrgAdmin — kan styre brugere i deres org + integrations + billing senere
+- Buyer/User — fuld brug af app features (indenfor plan)
+- Viewer — read-only
+
+SuperAdmin panel:
+- Liste over orgs
+- Enable/disable org
+- Plan + status (trial/active/past_due/canceled) — til V2
+- Storage usage pr org
+- API usage pr org
+- User management (add/remove, reset)
+- Audit logs
+
+=====================================================================
+4) Billing (senere) — men bygges klar nu
+=====================================================================
+V1: Ingen betaling nødvendig, men datamodel og gates skal være klar.
+V2: Stripe Checkout + webhooks.
+Krav:
+- Entitlements/feature gating (Free/Trial/Pro/Team/Enterprise)
+- Subscription status (trialing/active/past_due/canceled)
+- Manual override fra SuperAdmin (force allow/deny, trial extension)
+- Seat limits pr plan (Team)
+
+Free = Demo only.
+Pro/Team = Live Mode med BYOK.
+
+=====================================================================
+5) Connectors og datakilder (API-first, BYOK)
+=====================================================================
+Byg connector-lag med interfaces (pluggable):
+- MarketConnector (portaler til comps)
+- TaxConnector (afgiftberegning)
+- AuctionConnector (auktion listings)
+- VehicleLookupConnector (VIN/plate decode hvis valgt)
+Hver connector skal have:
+- init med org’s credentials (BYOK)
+- rate limiting + retry/backoff
+- caching
+- robuste error states
+
+Kilder:
+- mobile.de (market comps / search) — BYOK, hvis kunden har adgang
+- ASG Digital (afgift) — BYOK, hvis kunden har adgang
+- Bilinfo (listing distribution) — BYOK/partner (V2)
+- Auktioner (Auto1/BCA/Autobid/Autoproff etc.) — ofte partner/login; V1: manual import, V3: partner connectors
+- Motorstyrelsen/DMR: antag IKKE åbent public API. V1: manuel input/copy-paste + dokument upload. V2/V3: kun hvis officiel adgang.
+
+VIGTIGT: I Demo Mode må ingen eksterne API kaldes.
+
+=====================================================================
+6) Cloud storage: Cloudflare R2 (fra start)
+=====================================================================
+Alle store filer (billeder, PDF, dokumenter) skal i Cloudflare R2.
+ALDRIG gem filer i DB.
+DB gemmer kun metadata.
+
+R2 adgang:
+- Platformens R2 credentials gemmes som server secrets (Replit Secrets / env vars).
+- IKKE i UI.
+- Kunder skal ikke have R2 keys.
+
+Upload flow:
+- Backend genererer presigned upload URL
+- Frontend uploader direkte til R2
+- Backend gemmer metadata (r2_key, size, mime, checksum, org_id, vehicle_id)
+Download flow:
+- Backend genererer presigned download URL (org-scoped access control)
+
+Billedpipeline:
+- Ved upload: generér thumbnail + web-optimized version (komprimeret)
+- Original kun hvis plan tillader (HD storage feature)
+- Thumbnails bruges i lister for performance
+
+Storage limits:
+- Quota pr plan (GB) + max filer pr bil + max PDF size
+- Vis usage i Org settings
+
+Arkivering/lifecycle:
+- Når bil er “solgt” og > X dage (fx 90), flyt til “archive path” (billig retention)
+- (Valgfrit senere) slet originaler efter X tid for free/trial
+
+Bucket key struktur:
+org/{orgId}/vehicle/{vehicleId}/images/...
+org/{orgId}/vehicle/{vehicleId}/docs/...
+org/{orgId}/vehicle/{vehicleId}/reports/...
+
+=====================================================================
+7) App sider (Sitemap) — skal implementeres
+=====================================================================
+A) Landing + Auth pages
+- Landing (marketing)
+- Login, signup, forgot/reset
+
+B) Dashboard (Cockpit)
+- KPI cards: pipeline count, potentiel profit, avg ROI, hot deals count, risiko count
+- “Hot Deals” top 5
+- “Risiko biler” top 5
+- Recent activity/audit highlights
+- Quick actions: New vehicle, Import auction link, Generate PDF
+
+C) Auction Finder (Trading View)
+Top filter panel:
+- Min/Max købpris (EUR/DKK), “inkl. auktionsgebyr” toggle
+- Min profit (kr), Min ROI %, Max kapitalbinding
+- Moms type filter (EU reverse / DK moms / margin / privat / ukendt)
+- Afgift status (kendt/ukendt)
+- Årgang interval, km max, gear/brændstof, lokation
+- Risiko toggles (fx skjul ukendt afgift)
+- Slutter snart filter (fx <2 timer)
+
+Resultatliste grupperet:
+1) 🔥 Hot Deals
+2) ✅ Overvej
+3) ⚠ Risiko biler
+
+Per bilkort:
+- billede, model/variant, årgang, km, gear, fuel
+- aktuel pris (auktion) + gebyrer
+- forventet salgspris (konservativ/normal/optimistisk)
+- profit + ROI (for normal)
+- Deal Score 0–100
+- Din “MaxBid (calc)” + “plads til maxbid” = MaxBid - aktuel pris
+- Chips med forklaring (fx “Afgift mangler”, “Få comps”, “Høj km”)
+- Quick actions: Open source link, Save/watchlist, Create valuation, Generate PDF (scenario)
+
+D) Vehicle Detail (Single source of truth)
+Tabs:
+1) Source data (auction/portal)
+   - VIN, plate, model, variant, year, km, engine/hk, co2 (hvis kendt), gearbox, fuel, color, equipment
+   - købpris, gebyr, transport, link, billeder
+2) Market Analysis (Similar Cars Engine)
+   - comps list (5–50)
+   - stats: avg/median/min/max
+   - chart: price vs km
+   - data quality score (# comps, freshness)
+3) Tax / Registration
+   - ASG connector result (Live) eller manual input + dokumentation (DMR screenshot)
+   - historiknoter
+4) VAT & Costs
+   - moms template valg
+   - cost templates + line items
+   - kapitalbinding
+5) Profit & ROI
+   - total cost
+   - scenarios: conservative/normal/optimistic resale
+   - profit + ROI pr scenarie
+   - break-even
+   - MaxBid (strategies: Safe/Balanced/Aggressive)
+6) Notes & History
+   - notes, attachments
+   - status history
+   - audit trail
+
+E) Compare Models
+- vælg 2–5 biler
+- sammenlign total cost, afgift, moms retur, resale scenarios, profit/ROI, risk score, data quality
+
+F) VAT & Tax Center
+- Templates: EU reverse charge, DK moms, marginbil, privat
+- vis tydeligt moms retur og kapitalbinding
+- tax inputs/outputs + dokument upload
+- country-specific templates (top 8)
+
+G) Cost Templates
+- standard cost packs: Standard / Premium / Damage buffer
+- pr market (DK vs DE vs PL) med valuta
+
+H) Pipeline / “Mine køb”
+- liste over købte biler
+- statusflow: Fundet → Under vurdering → Bud afgivet → Vundet → Transport → Klargøring → Klar til salg → Online → Solgt
+- checklist “Klar til Bilinfo”:
+  - billeder min X
+  - udstyrsliste
+  - annoncemateriale
+  - afgift/moms klar
+  - syn/plader
+  - pris sat
+- “Send to Bilinfo” (V2): hvis API findes, ellers generér export pack (zip/CSV + annoncemateriale)
+
+I) Reports (PDF archive)
+- list af genererede PDF’er pr vehicle
+- versioning, scenario label, timestamp
+
+J) Settings
+- Profile
+- Organization settings
+- Users & roles
+- Integrations (BYOK keys)
+- Storage usage + quotas
+- (V2) Billing
+
+K) SuperAdmin (platform owner)
+- org/user management
+- plan/status/overrides
+- analytics dashboard (se nedenfor)
+
+=====================================================================
+8) Analytics (Eget ApexValue Analytics Dashboard)
+=====================================================================
+Byg internt analytics baseret på event tracking (første-class).
+Events logges i egen DB (events tabel).
+Realtime “online now” via heartbeat event fra browser (fx hvert 30s når fan er aktiv).
+
+Track events (minimum):
+- page_view
+- signup
+- login
+- vehicle_created
+- auction_imported
+- similar_cars_fetched
+- tax_calculated
+- pdf_generated
+- max_bid_calculated
+- status_changed
+- file_uploaded
+- heartbeat
+- (V2) subscription_started, payment_succeeded, payment_failed
+
+Analytics views:
+- Realtime: active users now, by country, by page
+- Country dashboard (top 8): visitors, signups, trials, paid (senere), conversion, retention, feature adoption
+- Funnel: visit→signup→first_vehicle→first_comps→first_pdf→(paid)
+- Feature adoption: usage per module
+- Opportunity score per country: weighted metric baseret på engagement+conversion+retention
+
+Privacy/GDPR:
+- Minimer persondata i events
+- Use org_id, user_id, country, timestamps
+- Retention policy (fx 12-24 måneder)
+
+=====================================================================
+9) Core beregninger (skal være korrekte og gennemsigtige)
+=====================================================================
+A) Total Cost (netto)
+TotalCost = købpris + gebyrer + transport + klargøring + syn/plader + øvrige + registreringsafgift
+           - moms_retursum (hvis relevant og dokumenteret i scenariet)
+
+B) Resale Scenarios
+Compute 3 scenarier:
+- Conservative: fx lower percentile/discount
+- Normal: median/expected
+- Optimistic: upper percentile/premium
+Baseret på comps + justering for km/årgang/gear/trim.
+
+C) Profit & ROI
+Profit = ResalePrice - TotalCost
+ROI% = (Profit / TotalCost) * 100
+Break-even Resale = TotalCost
+
+D) MaxBid (smart bud)
+MaxBid = NormalResale - tax - (costs excluding purchase) - desired_profit
+Vis plads til maxbid: MaxBid - current_price
+
+E) Deal Score 0–100 (med breakdown)
+Komponenter:
+- Price vs Market (0–40)
+- Profit & ROI (0–30)
+- Tax/VAT certainty (0–15)
+- Sellability (0–10)
+- Data quality (# comps) (0–5)
+UI skal vise chips der forklarer scoring og top-risici.
+
+F) Risiko-score
+Flag:
+- Ukendt afgift
+- Ukendt moms type
+- Lav comp count
+- Høj km vs årgang
+- Skade/uklar historik
+- Høj kapitalbinding
+
+G) “Estimeret vs Faktisk” (V2)
+Når solgt:
+- indtast faktisk salgspris og faktiske omkostninger
+- vis afvigelser og læring
+
+=====================================================================
+10) PDF Rapport (krav til format og indhold)
+=====================================================================
+PDF skal være “dealer investment report” kvalitet, med Gulf styling (subtil).
+PDF genereres server-side, uploades til R2, og version-arkiveres.
+
+PDF indhold (minimum):
+1) Forside
+   - ApexValue + kundens (org) navn/logo (hvis uploadet)
+   - Bil: make/model/variant, year, km, fuel, gearbox
+   - VIN/plate (hvis relevant)
+   - Source (auction/portal) + link
+   - Report ID + version + generated date/time
+   - Deal Score badge + anbefaling (KØB / OVERVEJ / DROP)
+
+2) Bil info + billeder
+   - 1–2 billeder
+   - specs + udstyr highlights
+   - condition notes (hvis udfyldt)
+
+3) Markedsanalyse
+   - tabel med 5–10 top comps (price, km, year, location, source)
+   - statistik: min/median/avg/max
+   - graf: price vs km (enkelt og læsbart)
+
+4) Tax/VAT section
+   - afgift resultat (eller manuel) + reference/dokumentation note
+   - moms scenarie: type, beregning, moms retur, kapitalbinding
+   - tydelige disclaimers: “indikativ beregning — verificér ved officiel vurdering”
+
+5) Økonomiark (udførlig)
+   - Køb: purchase price, auction fees
+   - Import: transport, plader/syn, klargøring, buffer
+   - Afgift
+   - Moms: købsmoms/salgsmoms/moms retur/binding
+   - TotalCost (netto)
+   - Resale scenarios (3)
+   - Profit & ROI (3)
+   - Break-even
+   - MaxBid + difference to current price
+
+6) Konklusion
+   - Anbefaling: KØB/OVERVEJ/DROP
+   - Top 3 grunde
+   - Top 3 risici
+   - Next actions/checklist
+
+PDF styling:
+- Header bar: Dark Blue
+- Accents: Powder Blue
+- CTA/badges: Orange
+- Font: modern sans (fx Inter)
+- Page numbers + footer with report id
+
+=====================================================================
+11) Manual import og demo data (V1)
+=====================================================================
+Auktion import V1:
+- Brugeren indsætter link + udfylder basisfelter
+- Upload billeder/screenshot
+- Systemet opretter vehicle + listing source
+
+Demo dataset:
+- mindst 30–100 demo vehicles
+- mindst 500–2000 demo comps
+- mix af DK-import case + EU export case (Polen)
+- demo pipeline + demo PDF templates
+- Demo analytics data
+
+=====================================================================
+12) Background jobs / performance
+=====================================================================
+Indfør job queue (selv i MVP) for:
+- PDF generation
+- image processing (thumbnails)
+- bulk comps fetch
+- bulk tax calc
+- scheduled alerts (V2)
+Hvis queue ikke er tilgængelig i Replit: lav en simpel DB-backed job tabel + worker loop.
+Målet er portabilitet.
+
+Caching:
+- comps results cache (per query)
+- tax results cache (per vehicle)
+- rate limiting per org
+
+=====================================================================
+13) Deal Alerts (V2 feature, men arkitektur klar)
+=====================================================================
+Rules engine:
+- alerts når ROI > X
+- price under max
+- close soon
+Notifications:
+- in-app notifications
+- email (optional)
+
+=====================================================================
+14) Portabilitet og migration (krav)
+=====================================================================
+Byg systemet så det kan flyttes fra Replit uden omskrivning:
+- stateless web app (sessions via secure cookies/JWT + DB)
+- Postgres (ikke lokal fil DB)
+- R2 for filer
+- all config via env vars
+- docker-ready (Dockerfile + standard commands)
+- migrations i kode (Prisma/Alembic/etc.)
+- CI/CD friendly repo layout (GitHub)
+
+=====================================================================
+15) Tekniske valg (vælg en og implementér)
+=====================================================================
+Vælg en stack der passer Replit og portabilitet:
+
+Option A (anbefalet for SaaS web):
+- Frontend: Next.js (App Router) + TypeScript
+- Backend: Next.js API routes eller separat Node service
+- DB: Postgres + Prisma
+- Auth: NextAuth eller custom JWT
+- PDF: server-side generator (PDFKit/Playwright/React-PDF)
+- Queue: DB-backed + worker
+- R2: AWS S3-compatible SDK
+
+Option B:
+- Backend: Python (FastAPI)
+- Frontend: Next.js
+- DB: Postgres
+- PDF: WeasyPrint/ReportLab
+- Queue: Celery/Redis (hvis muligt) eller DB-backed
+
+IMPLEMENTÉR MED FOKUS PÅ: hastighed i MVP, tydelig struktur, testbarhed, portabilitet.
+
+=====================================================================
+16) Environment variables (placeholders, ingen keys endnu)
+=====================================================================
+Appen skal starte i Demo Mode uden eksterne keys.
+Tilføj placeholders (tom eller “DEMO”) og feature flags:
+
+DATABASE_URL=
+APP_BASE_URL=
+JWT_SECRET=
+SESSION_SECRET=
+
+# Cloudflare R2 (platform secrets)
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET=
+R2_ENDPOINT=
+
+# Feature flags
+ENABLE_LIVE_MODE=false (default)
+ENABLE_STRIPE=false (default)
+
+# Stripe (senere)
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_PRO=
+STRIPE_PRICE_TEAM=
+
+Integrations (BYOK) skal gemmes pr org i DB (krypteret), ikke som env vars:
+- ASG_API_KEY (per org)
+- MOBILE_DE_API_KEY (per org)
+- BILINFO credentials (per org)
+etc.
+
+=====================================================================
+17) Sikkerhed
+=====================================================================
+- Krypter BYOK keys i DB (field-level encryption)
+- Mask keys i UI (vis kun sidste 4)
+- Audit log for ændringer af integrations
+- Org-scoped authorization på ALT
+- Presigned URLs skal være kort-lived og kun til autoriserede users
+- Rate-limit på endpoints pr org
+- Input validation overalt
+
+=====================================================================
+18) Leverancekrav (hvad du skal outputte som developer)
+=====================================================================
+1) Kørende Replit project (MVP) i Demo Mode
+2) Seed/demo dataset + demo PDF generation
+3) Live Mode “klar” (UI + DB + connectors interfaces) men deaktiveret uden keys
+4) R2 integration implementeret og “feature-flagged” (kan aktiveres når env vars er sat)
+5) PDF report generator implementeret efter spec
+6) Analytics events + dashboard (minimum: realtime online now + country stats + funnel basic)
+7) SuperAdmin panel (minimum: org list + enable/disable + usage overview)
+8) Dokumentation i README:
+   - setup steps (Replit + env vars)
+   - hvordan man aktiverer Live Mode
+   - hvordan man tilføjer BYOK keys
+   - hvordan man flytter til anden hosting (Docker/env vars)
+
+START NU med at:
+- Skitsere folder-structure og datamodel
+- Implementere auth + org/membership
+- Implementere Demo Mode med seed data
+- Implementere UI pages med Gulf theme
+- Implementere PDF generator (demo data)
+- Implementere events + realtime online
+- Implementere R2 service (presigned URL) bag feature flag
+- Implementere integrations settings (BYOK storage + test connection stub)
+
+SLUT.
