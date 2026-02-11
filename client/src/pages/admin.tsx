@@ -7,8 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency, formatNumber } from "@/lib/i18n";
 import { calcProfit } from "@/lib/calculations";
-import { Shield, Building2, Users, BarChart3, Activity, Database, Globe, Clock, TrendingUp, AlertTriangle } from "lucide-react";
+import { Shield, Building2, Users, BarChart3, Activity, Database, Globe, Clock, TrendingUp, AlertTriangle, Lock } from "lucide-react";
 import type { Vehicle } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 const fuelLabels: Record<string, string> = {
   petrol: "Benzin",
@@ -50,12 +51,42 @@ function StatCard({ title, value, subtitle, icon: Icon }: {
 }
 
 export default function Admin() {
+  const { user, isLoading: authLoading } = useAuth();
   const { data: vehicles, isLoading: vehiclesLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
+    enabled: !!user?.isAdmin,
   });
   const { data: stats, isLoading: statsLoading } = useQuery<any>({
-    queryKey: ["/api/stats"],
+    queryKey: ["/api/admin/stats"],
+    enabled: !!user?.isAdmin,
   });
+
+  if (authLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!user?.isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="rounded-full bg-muted p-4">
+          <Lock className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h2 className="text-xl font-semibold" data-testid="text-admin-denied">Adgang nægtet</h2>
+        <p className="text-muted-foreground text-sm text-center max-w-md" data-testid="text-admin-denied-desc">
+          Denne side er kun tilgængelig for administratorer. Kontakt din administrator for at få adgang.
+        </p>
+      </div>
+    );
+  }
 
   const allVehicles = vehicles || [];
   const isLoading = vehiclesLoading || statsLoading;

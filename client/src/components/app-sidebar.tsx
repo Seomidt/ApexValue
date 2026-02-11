@@ -25,10 +25,8 @@ const navItems = [
   { title: "Rapporter", url: "/reports", icon: FileText },
 ];
 
-const bottomItems = [
-  { title: "Admin", url: "/admin", icon: Shield },
-  { title: "Indstillinger", url: "/settings", icon: Settings },
-];
+const settingsItem = { title: "Indstillinger", url: "/settings", icon: Settings };
+const adminItem = { title: "Admin", url: "/admin", icon: Shield };
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -79,16 +77,24 @@ export function AppSidebar() {
           <SidebarGroupLabel>System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {bottomItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild data-active={isActive(item.url)}>
-                    <Link href={item.url} data-testid={`link-nav-${item.title.toLowerCase()}`}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+              {user?.isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild data-active={isActive(adminItem.url)}>
+                    <Link href={adminItem.url} data-testid="link-nav-admin">
+                      <adminItem.icon className="w-4 h-4" />
+                      <span>{adminItem.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild data-active={isActive(settingsItem.url)}>
+                  <Link href={settingsItem.url} data-testid="link-nav-indstillinger">
+                    <settingsItem.icon className="w-4 h-4" />
+                    <span>{settingsItem.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

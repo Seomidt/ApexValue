@@ -1,9 +1,21 @@
-import type { Express } from "express";
+import type { Express, RequestHandler } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { seedDemoData } from "./seed";
 import { insertVehicleSchema, insertCostTemplateSchema, insertEventSchema, VEHICLE_STATUSES } from "@shared/schema";
+
+const isAdmin: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+  if (!req.isAuthenticated() || !user?.claims?.sub) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const dbUser = await storage.getUser(user.claims.sub);
+  if (!dbUser?.isAdmin) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  next();
+};
 
 export async function registerRoutes(
   httpServer: Server,
@@ -162,6 +174,26 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/stats", isAdmin, async (_req, res) => {
+    try {
+      const vehicles = await storage.getVehicles();
+      const pipeline = vehicles.filter(v => v.status !== "sold");
+      const hotDeals = vehicles.filter(v => (v.dealScore || 0) >= 70);
+      const riskVehicles = vehicles.filter(v => (v.dealScore || 0) < 40);
+
+      res.json({
+        totalVehicles: vehicles.length,
+        pipelineCount: pipeline.length,
+        hotDealsCount: hotDeals.length,
+        riskCount: riskVehicles.length,
+        soldCount: vehicles.filter(v => v.status === "sold").length,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
     }
   });
 
