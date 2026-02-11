@@ -1,38 +1,112 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import {
+  type User, type UpsertUser,
+  type Vehicle, type InsertVehicle,
+  type MarketComp, type InsertMarketComp,
+  type CostTemplate, type InsertCostTemplate,
+  type Organization, type InsertOrganization,
+  type Event, type InsertEvent,
+  vehicles, marketComps, costTemplates, organizations, events,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and } from "drizzle-orm";
+import { users } from "@shared/models/auth";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
+  getVehicles(orgId?: number): Promise<Vehicle[]>;
+  getVehicle(id: number): Promise<Vehicle | undefined>;
+  createVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
+  updateVehicle(id: number, data: Partial<InsertVehicle>): Promise<Vehicle | undefined>;
+
+  getMarketComps(vehicleId: number): Promise<MarketComp[]>;
+  createMarketComp(comp: InsertMarketComp): Promise<MarketComp>;
+
+  getCostTemplates(orgId?: number): Promise<CostTemplate[]>;
+  createCostTemplate(template: InsertCostTemplate): Promise<CostTemplate>;
+
+  getOrganization(id: number): Promise<Organization | undefined>;
+  createOrganization(org: InsertOrganization): Promise<Organization>;
+
+  createEvent(event: InsertEvent): Promise<Event>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
+
+  async getVehicles(orgId?: number): Promise<Vehicle[]> {
+    if (orgId) {
+      return db.select().from(vehicles).where(eq(vehicles.orgId, orgId)).orderBy(desc(vehicles.createdAt));
+    }
+    return db.select().from(vehicles).orderBy(desc(vehicles.createdAt));
+  }
+
+  async getVehicle(id: number): Promise<Vehicle | undefined> {
+    const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, id));
+    return vehicle || undefined;
+  }
+
+  async createVehicle(vehicle: InsertVehicle): Promise<Vehicle> {
+    const [created] = await db.insert(vehicles).values(vehicle).returning();
+    return created;
+  }
+
+  async updateVehicle(id: number, data: Partial<InsertVehicle>): Promise<Vehicle | undefined> {
+    const [updated] = await db.update(vehicles).set({ ...data, updatedAt: new Date() }).where(eq(vehicles.id, id)).returning();
+    return updated || undefined;
+  }
+
+  async getMarketComps(vehicleId: number): Promise<MarketComp[]> {
+    return db.select().from(marketComps).where(eq(marketComps.vehicleId, vehicleId));
+  }
+
+  async createMarketComp(comp: InsertMarketComp): Promise<MarketComp> {
+    const [created] = await db.insert(marketComps).values(comp).returning();
+    return created;
+  }
+
+  async getCostTemplates(orgId?: number): Promise<CostTemplate[]> {
+    return db.select().from(costTemplates);
+  }
+
+  async createCostTemplate(template: InsertCostTemplate): Promise<CostTemplate> {
+    const [created] = await db.insert(costTemplates).values(template).returning();
+    return created;
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    const [org] = await db.select().from(organizations).where(eq(organizations.id, id));
+    return org || undefined;
+  }
+
+  async createOrganization(org: InsertOrganization): Promise<Organization> {
+    const [created] = await db.insert(organizations).values(org).returning();
+    return created;
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const [created] = await db.insert(events).values(event).returning();
+    return created;
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

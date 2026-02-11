@@ -1,28 +1,113 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { useAuth } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { LogIn } from "lucide-react";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/landing";
+import Dashboard from "@/pages/dashboard";
+import AuctionFinder from "@/pages/auction-finder";
+import VehicleDetail from "@/pages/vehicle-detail";
+import Pipeline from "@/pages/pipeline";
+import VatTax from "@/pages/vat-tax";
+import CostTemplates from "@/pages/cost-templates";
+import Reports from "@/pages/reports";
+import Settings from "@/pages/settings";
 
-function Router() {
+function AppRouter() {
   return (
     <Switch>
-      {/* Add pages below */}
-      {/* <Route path="/" component={Home}/> */}
-      {/* Fallback to 404 */}
+      <Route path="/" component={Dashboard} />
+      <Route path="/auction-finder" component={AuctionFinder} />
+      <Route path="/vehicle/:id" component={VehicleDetail} />
+      <Route path="/pipeline" component={Pipeline} />
+      <Route path="/vat-tax" component={VatTax} />
+      <Route path="/cost-templates" component={CostTemplates} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
+function MainLayout() {
+  const { user } = useAuth();
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1 min-w-0">
+          <header className="flex items-center justify-between gap-2 p-2 border-b bg-card/30 sticky top-0 z-[999]">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs" data-testid="badge-demo-mode">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-chart-3 mr-1.5" />
+                Demo Mode
+              </Badge>
+              {!user && (
+                <a href="/api/login">
+                  <Button size="sm" variant="outline" data-testid="button-header-login">
+                    <LogIn className="w-3.5 h-3.5 mr-1" /> Sign In
+                  </Button>
+                </a>
+              )}
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto">
+            <AppRouter />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function AppContent() {
+  const { isLoading } = useAuth();
+  const [location] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-3">
+          <Skeleton className="h-8 w-32 mx-auto" />
+          <Skeleton className="h-4 w-48 mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  if (location === "/landing") {
+    return <Landing />;
+  }
+
+  return <MainLayout />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <AppContent />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
