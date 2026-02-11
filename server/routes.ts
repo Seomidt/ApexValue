@@ -1,9 +1,11 @@
 import type { Express, RequestHandler } from "express";
 import { type Server } from "http";
+import multer from "multer";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { seedDemoData } from "./seed";
 import { insertVehicleSchema, insertCostTemplateSchema, insertEventSchema, VEHICLE_STATUSES } from "@shared/schema";
+import { isR2Configured, testR2Connection, uploadFile, listFiles, deleteFile, getPresignedUrl } from "./r2";
 
 const isAdmin: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
@@ -194,6 +196,89 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching admin stats:", error);
       res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+  app.get("/api/r2/status", async (_req, res) => {
+    try {
+      if (!isR2Configured()) {
+        return res.json({ configured: false, message: "R2 er ikke konfigureret." });
+      }
+      const result = await testR2Connection();
+      res.json({ configured: true, ...result });
+    } catch (error) {
+      res.status(500).json({ configured: false, success: false, message: "Fejl ved test af R2." });
+    }
+  });
+
+  app.post("/api/r2/upload", isAuthenticated, upload.single("file"), async (req, res) => {
+    try {
+      if (!isR2Configured()) {
+        return res.status(400).json({ message: "R2 er ikke konfigureret." });
+      }
+      if (!req.file) {
+        return res.status(400).json({ message: "Ingen fil uploadet." });
+      }
+      const folder = req.body.folder || "uploads";
+      const timestamp = Date.now();
+      const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const key = `${folder}/${timestamp}-${safeName}`;
+      await uploadFile(key, req.file.buffer, req.file.mimetype);
+      const url = await getPresignedUrl(key);
+      res.json({ key, url, size: req.file.size, contentType: req.file.mimetype });
+    } catch (error: any) {
+      console.error("R2 upload error:", error);
+      res.status(500).json({ message: "Fejl ved upload til R2." });
+    }
+  });
+
+  app.get("/api/r2/files", isAuthenticated, async (req, res) => {
+    try {
+      if (!isR2Configured()) {
+        return res.status(400).json({ message: "R2 er ikke konfigureret." });
+      }
+      const prefix = (req.query.prefix as string) || undefined;
+      const files = await listFiles(prefix);
+      res.json(files);
+    } catch (error) {
+      console.error("R2 list error:", error);
+      res.status(500).json({ message: "Fejl ved hentning af filer fra R2." });
+    }
+  });
+
+  app.post("/api/r2/url", isAuthenticated, async (req, res) => {
+    try {
+      if (!isR2Configured()) {
+        return res.status(400).json({ message: "R2 er ikke konfigureret." });
+      }
+      const { key } = req.body;
+      if (!key || typeof key !== "string") {
+        return res.status(400).json({ message: "Fil-nøgle er påkrævet." });
+      }
+      const url = await getPresignedUrl(key);
+      res.json({ url });
+    } catch (error) {
+      console.error("R2 presigned url error:", error);
+      res.status(500).json({ message: "Fejl ved generering af URL." });
+    }
+  });
+
+  app.post("/api/r2/delete", isAuthenticated, async (req, res) => {
+    try {
+      if (!isR2Configured()) {
+        return res.status(400).json({ message: "R2 er ikke konfigureret." });
+      }
+      const { key } = req.body;
+      if (!key || typeof key !== "string") {
+        return res.status(400).json({ message: "Fil-nøgle er påkrævet." });
+      }
+      await deleteFile(key);
+      res.json({ deleted: true });
+    } catch (error) {
+      console.error("R2 delete error:", error);
+      res.status(500).json({ message: "Fejl ved sletning af fil." });
     }
   });
 

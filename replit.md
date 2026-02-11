@@ -19,7 +19,8 @@ ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Rac
 - **Database**: PostgreSQL (Neon) via Drizzle ORM
 - **Auth**: Replit Auth (OpenID Connect)
 - **PDF**: jsPDF for client-side report generation
-- **Storage**: Cloudflare R2 (feature-flagged, ready for activation)
+- **Storage**: Cloudflare R2 (active - upload, list, delete, presigned URLs)
+- **R2 Service**: `server/r2.ts` - Smart endpoint/bucket URL parsing, connection testing
 
 ## Key Files
 - `shared/schema.ts` - Database models (organizations, vehicles, marketComps, costTemplates, events)

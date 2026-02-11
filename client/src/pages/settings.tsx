@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -220,6 +220,94 @@ function APIKeyDialog({ connectorKey, onClose, onSave }: { connectorKey: string;
   );
 }
 
+function StorageTab() {
+  const [r2Status, setR2Status] = useState<{ configured: boolean; success?: boolean; message?: string } | null>(null);
+  const [files, setFiles] = useState<{ key: string; size: number; lastModified?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStatus() {
+      try {
+        const res = await fetch("/api/r2/status");
+        const data = await res.json();
+        setR2Status(data);
+        if (data.configured && data.success) {
+          try {
+            const filesRes = await fetch("/api/r2/files");
+            if (filesRes.ok) {
+              const filesData = await filesRes.json();
+              setFiles(Array.isArray(filesData) ? filesData : []);
+            }
+          } catch { /* file listing requires auth */ }
+        }
+      } catch {
+        setR2Status({ configured: false, message: "Kunne ikke kontakte serveren." });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStatus();
+  }, []);
+
+  const totalSizeMB = files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024);
+  const imageFiles = files.filter(f => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.key));
+  const docFiles = files.filter(f => /\.(pdf|doc|docx|xls|xlsx|csv)$/i.test(f.key));
+  const otherFiles = files.filter(f => !imageFiles.includes(f) && !docFiles.includes(f));
+
+  return (
+    <Card className="p-4 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Cloudflare R2 Lagring</h3>
+        {loading ? (
+          <Badge variant="outline" className="text-xs"><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Tjekker...</Badge>
+        ) : r2Status?.configured && r2Status?.success ? (
+          <Badge variant="outline" className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Forbundet
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30">
+            <XCircle className="w-3 h-3 mr-1" /> {r2Status?.configured ? "Fejl" : "Ikke konfigureret"}
+          </Badge>
+        )}
+      </div>
+
+      {r2Status?.message && !r2Status.success && (
+        <div className="flex items-start gap-2 text-xs p-2 rounded-md bg-red-500/10 text-red-700 dark:text-red-400">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          <span>{r2Status.message}</span>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <div>
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-muted-foreground">Lagring Brugt</span>
+            <span className="font-semibold">{totalSizeMB.toFixed(2)} MB</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min((totalSizeMB / 500) * 100, 100)}%` }} />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-xs">
+          <div>
+            <p className="text-muted-foreground">Billeder</p>
+            <p className="font-semibold" data-testid="text-storage-images">{imageFiles.length} filer</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Dokumenter</p>
+            <p className="font-semibold" data-testid="text-storage-docs">{docFiles.length} filer</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Andre filer</p>
+            <p className="font-semibold" data-testid="text-storage-other">{otherFiles.length} filer</p>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">{files.length} filer i alt i R2 bucket.</p>
+      </div>
+    </Card>
+  );
+}
+
 export default function Settings() {
   const { user } = useAuth();
   const { mode } = useAppMode();
@@ -433,34 +521,7 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="storage">
-          <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">Lagringsforbrug</h3>
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Lagring Brugt</span>
-                  <span className="font-semibold">0 MB / 500 MB</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: "0%" }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-xs">
-                <div>
-                  <p className="text-muted-foreground">Billeder</p>
-                  <p className="font-semibold">0 filer</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Dokumenter</p>
-                  <p className="font-semibold">0 filer</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Rapporter</p>
-                  <p className="font-semibold">0 PDF'er</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <StorageTab />
         </TabsContent>
       </Tabs>
     </div>
