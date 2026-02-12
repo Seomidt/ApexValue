@@ -4,6 +4,7 @@
 ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Racing-inspired design. It provides importers and dealers with tools for vehicle valuation, market analysis, deal scoring, financial calculations, and pipeline management across 8 European markets.
 
 ## Recent Changes
+- 2026-02-12: Domain/routing setup - marketing at apexvalue.net, app at app.apexvalue.net, /app/* redirects, Gulf Racing landing page with login/demo CTAs
 - 2026-02-11: Initial MVP build - complete frontend and backend with 38 demo vehicles, 500+ market comps, 11 cost templates, auth integration, financial calculations
 - 2026-02-11: Added Compare Models page (2-5 vehicle side-by-side comparison)
 - 2026-02-11: Added SuperAdmin panel with org management, usage analytics
@@ -46,6 +47,18 @@ ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Rac
 - `/reports` - Reports & Analytics (PDF generation, portfolio analytics, top performers)
 - `/admin` - SuperAdmin Panel (org management, usage analytics, distribution charts)
 - `/settings` - Profile, organization, BYOK integrations (8 API connectors), storage
+
+## Domain & Routing Setup
+- **Marketing**: `apexvalue.net` (and `www.apexvalue.net`) serves landing page at `/landing`
+- **App**: `app.apexvalue.net` serves the webapp (login + product)
+- **Redirects**: `/app` and `/app/*` on marketing domain redirect 302 to `app.apexvalue.net/*`
+- **Config endpoint**: `GET /api/config/urls` returns `{ appBaseUrl, marketingBaseUrl }`
+- **Environment Variables**:
+  - `APP_BASE_URL` (production: `https://app.apexvalue.net`, dev: empty for local routing)
+  - `MARKETING_BASE_URL` (production: `https://apexvalue.net`, dev: empty)
+- **DNS Setup Required**: Both `apexvalue.net` and `app.apexvalue.net` should point to the same deployment
+- **Host-based routing**: Express middleware checks Host header; `app.*` serves webapp, otherwise serves marketing/landing
+- **Email/System links**: All system emails should use `APP_BASE_URL` as base
 
 ## User Preferences
 - Dark mode by default

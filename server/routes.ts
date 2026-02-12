@@ -26,6 +26,26 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  const APP_BASE_URL = process.env.APP_BASE_URL || "";
+  const MARKETING_BASE_URL = process.env.MARKETING_BASE_URL || "";
+
+  app.use((req, res, next) => {
+    if (req.path === "/app" || req.path.startsWith("/app/")) {
+      if (!APP_BASE_URL) return res.redirect("/");
+      const subPath = req.path.replace(/^\/app\/?/, "");
+      const safePath = subPath.replace(/[^a-zA-Z0-9\-_\/]/g, "");
+      return res.redirect(302, `${APP_BASE_URL}/${safePath}`);
+    }
+    next();
+  });
+
+  app.get("/api/config/urls", (_req, res) => {
+    res.json({
+      appBaseUrl: APP_BASE_URL,
+      marketingBaseUrl: MARKETING_BASE_URL,
+    });
+  });
+
   app.get("/api/vehicles", async (_req, res) => {
     try {
       const vehicles = await storage.getVehicles();
