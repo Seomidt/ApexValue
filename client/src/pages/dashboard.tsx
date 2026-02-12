@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
+import { DealScoreBadge, DealRecommendationBadge, DealScoreLegend } from "@/components/deal-score-badge";
 import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags, getDealRecommendation } from "@/lib/calculations";
 import {
@@ -406,6 +406,8 @@ export default function Dashboard() {
 
         <div className="space-y-4">
           <ProfitCalculator vehicles={pipelineVehicles} />
+
+          <DealScoreLegend />
 
           <Card className="p-4" data-testid="card-hot-deals">
             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">

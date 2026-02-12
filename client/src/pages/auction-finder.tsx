@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { VehicleCard } from "@/components/vehicle-card";
+import { DealScoreLegend } from "@/components/deal-score-badge";
 import { getDealRecommendation, calcProfit, calcROI } from "@/lib/calculations";
 import { Search, SlidersHorizontal, Flame, CheckCircle2, AlertTriangle, Car, ArrowUpDown } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
@@ -137,6 +138,7 @@ export default function AuctionFinder() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <DealScoreLegend />
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-[180px]" data-testid="select-sort">
               <ArrowUpDown className="w-3.5 h-3.5 mr-1" />
