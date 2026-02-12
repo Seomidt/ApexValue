@@ -102,12 +102,12 @@ function MainLayout() {
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <ModeToggle />
               {!user && (
                 <a href="/api/login">
-                  <Button size="sm" variant="outline" data-testid="button-header-login">
-                    <LogIn className="w-3.5 h-3.5 mr-1" /> Log Ind
+                  <Button className="bg-[#FF6319] text-white border-[#FF6319]" data-testid="button-header-login">
+                    <LogIn className="w-4 h-4 mr-1.5" /> Log Ind
                   </Button>
                 </a>
               )}
