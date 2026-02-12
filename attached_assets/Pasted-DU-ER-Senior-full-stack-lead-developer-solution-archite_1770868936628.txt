@@ -1,0 +1,80 @@
+DU ER: Senior full-stack lead developer + solution architect.
+OPGAVE: Implementér domæne- og routing-setup for ApexValue, så brugere ikke “farer vild” mellem landing og app. Løsningen skal være SaaS-standard og fungere med apexvalue.net som marketing-site og app.apexvalue.net som produkt-webapp. Det skal være enkelt for brugeren at komme ind i app’en selv hvis de kun skriver apexvalue.net.
+
+MÅL:
+1) apexvalue.net (og www.apexvalue.net) = landing/marketing
+2) app.apexvalue.net = selve webappen (login + produkt)
+3) apexvalue.net/app = smart genvej → redirect til app.apexvalue.net (med relevant path)
+4) Brugere der allerede er logget ind og lander på apexvalue.net skal “smart redirectes” til app’en (valgfrit men anbefalet).
+5) Alle emails og systemlinks skal pege på app.apexvalue.net som default.
+
+KRAV TIL UX:
+- Landing skal have en tydelig “Log ind” knap i topbar, der altid linker til:
+  https://app.apexvalue.net/login
+- Landing skal have en tydelig “Prøv demo” knap, der linker til:
+  https://app.apexvalue.net/demo  (eller /signup med demo-mode)
+- Når brugeren skriver apexvalue.net og forsøger at logge ind, skal de kunne finde login på 1 klik.
+
+KRAV TIL ROUTING / REDIRECTS:
+A) Marketing-domæne:
+- apexvalue.net/
+- www.apexvalue.net/
+=> viser marketing/landing
+
+B) App-domæne:
+- app.apexvalue.net/*
+=> viser webapp (auth + produkt)
+
+C) Genvej på marketing-domænet:
+- apexvalue.net/app  -> 302 redirect til https://app.apexvalue.net/
+- apexvalue.net/app/login -> 302 redirect til https://app.apexvalue.net/login
+- apexvalue.net/app/* -> -> 302 redirect til https://app.apexvalue.net/* (bevar path)
+Implementér med server-side redirects (ikke kun client), så det virker hurtigt og SEO/UX korrekt.
+
+D) Smart redirect for kendte brugere (optional, men anbefalet):
+Når en bruger går ind på apexvalue.net:
+- Hvis der findes en gyldig session-cookie eller auth-token der kan valideres (enten shared cookie på .apexvalue.net eller en letvægts “session probe”):
+  -> redirect til https://app.apexvalue.net/dashboard
+- Ellers: vis landing normalt.
+
+OBS:
+- I V1 er det OK at droppe shared-cookie mellem subdomæner og kun have “Log ind” knappen + /app redirect.
+- Hvis der implementeres shared-cookie, skal den være secure, httpOnly, sameSite korrekt, og udstedes på .apexvalue.net (domain-wide).
+- Alternativt: brug en “SSO handoff” route hvor landing kan spørge app’en om session-status (CORS-safe) og redirecte.
+
+EMAIL LINKS / SYSTEM LINKS:
+- Alle emails (welcome, password reset, magic links, invoices senere) skal bruge app base url:
+  APP_BASE_URL = https://app.apexvalue.net
+- Marketing links (features/pricing) bruger:
+  MARKETING_BASE_URL = https://apexvalue.net
+
+TEKNISK IMPLEMENTATION (passer til Replit og portabilitet):
+- Brug environment variables:
+  MARKETING_BASE_URL
+  APP_BASE_URL
+- App og marketing kan være:
+  Option 1: To separate deploys/services (bedst langsigtet)
+  Option 2: Én kodebase med host-based routing (hurtigt til MVP):
+    - Hvis Host header starter med “app.” → serve webapp
+    - Ellers → serve marketing
+- Redirects skal være centrale og testbare (middleware).
+
+SIKKERHED:
+- Undgå open redirects (valider path)
+- Force HTTPS
+- Rate limit login endpoints på app-subdomænet
+
+ACCEPTANCE CRITERIA:
+1) Bruger kan gå til apexvalue.net og finde login på 1 klik.
+2) apexvalue.net/app og apexvalue.net/app/login sender brugeren direkte til app-subdomænet.
+3) app.apexvalue.net fungerer uafhængigt og er det primære sted for produktet.
+4) Alle systememails peger på app.apexvalue.net, ikke marketing-domænet.
+5) Løsningen er dokumenteret i README (hvilke DNS/subdomæner + env vars).
+
+START NU:
+- Beskriv den anbefalede routing-arkitektur
+- Implementér redirects/middleware
+- Implementér topbar links (“Log ind”, “Prøv demo”)
+- Tilføj env vars og dokumentation
+
+SLUT.
