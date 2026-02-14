@@ -11,12 +11,142 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppMode } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save, CreditCard, Info } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save, CreditCard, Info, HardDrive, Upload, Trash2, ExternalLink as ExternalLinkIcon, ArrowRight } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { MARKET_COUNTRIES } from "@shared/schema";
-import { useLanguage, LANGUAGE_LABELS, type SupportedLanguage } from "@/lib/i18n";
+import { useLanguage, LANGUAGE_LABELS, type SupportedLanguage, formatCurrency } from "@/lib/i18n";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useQuery, useMutation } from "@tanstack/react-query";
+
+function StorageTab() {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+
+  const { data: files, isLoading } = useQuery<{ key: string; size: number; lastModified: string }[]>({
+    queryKey: ["/api/r2/files"],
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "assets/logos");
+      const res = await apiRequest("POST", "/api/r2/upload", formData);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/r2/files"] });
+      toast({ title: t("settings.upload_success") });
+    },
+    onError: () => {
+      toast({ title: t("settings.upload_error"), variant: "destructive" });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (key: string) => {
+      await apiRequest("POST", "/api/r2/delete", { key });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/r2/files"] });
+      toast({ title: t("settings.delete_success") });
+    },
+    onError: () => {
+      toast({ title: t("settings.delete_error"), variant: "destructive" });
+    }
+  });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadMutation.mutate(file);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-4 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">{t("settings.storage_title")}</h3>
+          <p className="text-xs text-muted-foreground">{t("settings.storage_subtitle")}</p>
+        </div>
+
+        <div className="p-8 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center gap-3 bg-muted/30">
+          <div className="p-3 rounded-full bg-primary/10 text-primary">
+            <Upload className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm font-medium">{t("settings.upload_logo")}</p>
+            <p className="text-xs text-muted-foreground max-w-xs mt-1">
+              {t("settings.upload_hint_storage")}
+            </p>
+          </div>
+          <Input 
+            type="file" 
+            className="hidden" 
+            id="logo-upload" 
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploadMutation.isPending}
+          />
+          <Button 
+            asChild 
+            variant="outline" 
+            size="sm" 
+            disabled={uploadMutation.isPending}
+          >
+            <label htmlFor="logo-upload" className="cursor-pointer">
+              {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {t("settings.upload_logo")}
+            </label>
+          </Button>
+        </div>
+      </Card>
+
+      <Card className="p-4 space-y-4">
+        <h3 className="text-sm font-semibold">{t("settings.files")}</h3>
+        {isLoading ? (
+          <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+        ) : !files || files.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center p-8 border rounded-xl border-dashed">
+            {t("settings.no_files")}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {files.map((file) => (
+              <div key={file.key} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded bg-muted">
+                    <HardDrive className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{file.key.split("/").pop()}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB • {new Date(file.lastModified).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => deleteMutation.mutate(file.key)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
 
 const CATEGORY_MAP: Record<string, string> = {
   market: "settings.category_market",
@@ -342,6 +472,13 @@ export default function Settings() {
           >
             <CreditCard className="w-4 h-4 mr-2" /> {t("settings.tab_billing")}
           </TabsTrigger>
+          <TabsTrigger 
+            value="storage" 
+            data-testid="tab-storage"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all"
+          >
+            <HardDrive className="w-4 h-4 mr-2" /> {t("settings.tab_storage")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -446,9 +583,18 @@ export default function Settings() {
               </div>
             </div>
             <Separator />
-            <div className="flex items-start gap-2 text-xs text-muted-foreground p-3 rounded-md border">
-              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>{t("settings.logo_hint")}</span>
+            <div className="flex items-start gap-2 text-xs text-muted-foreground p-3 rounded-md border bg-muted/20">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary" />
+              <div className="space-y-1">
+                <p>{t("settings.logo_hint")}</p>
+                <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary underline hover:bg-transparent" onClick={() => {
+                  const tabs = document.querySelectorAll('[role="tab"]');
+                  const storageTab = Array.from(tabs).find(t => t.getAttribute('data-value') === 'storage') as HTMLElement;
+                  if (storageTab) storageTab.click();
+                }}>
+                  {t("settings.tab_storage")} <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
             </div>
             <Separator />
             <div>

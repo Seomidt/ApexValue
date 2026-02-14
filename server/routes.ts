@@ -340,7 +340,7 @@ export async function registerRoutes(
       if (!req.file) {
         return res.status(400).json({ message: "Ingen fil uploadet." });
       }
-      const folder = req.body.folder || "uploads";
+      const folder = (req.body.folder as string) || "uploads";
       const timestamp = Date.now();
       const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
       const key = `${folder}/${timestamp}-${safeName}`;
