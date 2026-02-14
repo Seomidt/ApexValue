@@ -312,19 +312,35 @@ export default function Settings() {
         <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-3">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="profile" data-testid="tab-profile">
-            <User className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_profile")}
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="bg-muted/50 p-1.5 rounded-xl h-auto flex-wrap gap-1 border border-border/40">
+          <TabsTrigger 
+            value="profile" 
+            data-testid="tab-profile"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all"
+          >
+            <User className="w-4 h-4 mr-2" /> {t("settings.tab_profile")}
           </TabsTrigger>
-          <TabsTrigger value="organization" data-testid="tab-organization">
-            <Building2 className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_organization")}
+          <TabsTrigger 
+            value="organization" 
+            data-testid="tab-organization"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all"
+          >
+            <Building2 className="w-4 h-4 mr-2" /> {t("settings.tab_organization")}
           </TabsTrigger>
-          <TabsTrigger value="integrations" data-testid="tab-integrations">
-            <Key className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_integrations")}
+          <TabsTrigger 
+            value="integrations" 
+            data-testid="tab-integrations"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all"
+          >
+            <Key className="w-4 h-4 mr-2" /> {t("settings.tab_integrations")}
           </TabsTrigger>
-          <TabsTrigger value="billing" data-testid="tab-billing">
-            <CreditCard className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_billing")}
+          <TabsTrigger 
+            value="billing" 
+            data-testid="tab-billing"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all"
+          >
+            <CreditCard className="w-4 h-4 mr-2" /> {t("settings.tab_billing")}
           </TabsTrigger>
         </TabsList>
 
