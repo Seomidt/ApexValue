@@ -4,6 +4,12 @@
 ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Racing-inspired design. It provides importers and dealers with tools for vehicle valuation, market analysis, deal scoring, financial calculations, and pipeline management across 8 European markets.
 
 ## Recent Changes
+- 2026-02-14: Settings redesigned with Profile/Org/Integrations/Billing tabs, avatar display, company details, BYOK category pills, billing plans (Free/Pro/Team)
+- 2026-02-14: Demo Mode banner added to dashboard, auction-finder, pipeline, reports (dismissible with localStorage persistence)
+- 2026-02-14: VAT Calculator mini-app at /vat/calculator + integrated as tab in Vehicle Detail (4 schemes, live calculations, capital binding)
+- 2026-02-14: Dashboard enhanced with 6 KPI cards (Hot Deals, Risk Alerts, Avg ROI) + Recent Activity timeline feed
+- 2026-02-14: Vehicle risk badges with tooltips, explanations, and fix-action links (to /vat/calculator, /vat-tax, /settings)
+- 2026-02-14: 250+ new i18n keys added across all 8 languages
 - 2026-02-12: Domain/routing setup - marketing at apexvalue.net, app at app.apexvalue.net, /app/* redirects, Gulf Racing landing page with login/demo CTAs
 - 2026-02-11: Initial MVP build - complete frontend and backend with 38 demo vehicles, 500+ market comps, 11 cost templates, auth integration, financial calculations
 - 2026-02-11: Added Compare Models page (2-5 vehicle side-by-side comparison)
@@ -39,10 +45,11 @@ ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Rac
 - `/landing` - Marketing landing page
 - `/` - Dashboard Cockpit (KPIs, hot deals, risk vehicles, Find Bil search, Profit Calculator)
 - `/auction-finder` - Vehicle search with filters, sorting, deal categorization (Hot/Consider/Risk)
-- `/vehicle/:id` - Vehicle detail with 6 tabs (Source, Market, Tax, Costs, Profit, Notes)
+- `/vehicle/:id` - Vehicle detail with 7 tabs (Source, Market, Tax, Costs, Profit, Moms/VAT, Notes)
 - `/pipeline` - Pipeline management with status workflow and dropdown controls
 - `/compare` - Compare Models (2-5 vehicles side-by-side, best-value highlighting)
 - `/vat-tax` - VAT & Tax Center with country templates
+- `/vat/calculator` - VAT Calculator (4 schemes, live calculations, capital binding indicator)
 - `/cost-templates` - Cost template management
 - `/reports` - Reports & Analytics (PDF generation, portfolio analytics, top performers)
 - `/admin` - SuperAdmin Panel (org management, usage analytics, distribution charts)
