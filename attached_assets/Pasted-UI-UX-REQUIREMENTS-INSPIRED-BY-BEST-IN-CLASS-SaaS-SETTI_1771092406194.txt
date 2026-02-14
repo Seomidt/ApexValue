@@ -1,0 +1,65 @@
+UI/UX REQUIREMENTS INSPIRED BY BEST-IN-CLASS SaaS SETTINGS + ONBOARDING:
+
+A) SETTINGS AREA (single page with tabs)
+Implement /settings with top tabs:
+- Profile: full name, avatar, email (read-only), UI language dropdown, default market dropdown with flags.
+- Org: company name, CVR/VAT ID, company logo upload (used in PDF branding), address (optional).
+- APIs (Integrations): BYOK hub with explanation banner + connector cards.
+- Billing: plans page (Free/Pro/Team) + upgrade CTA (Stripe later).
+
+B) DEMO MODE BANNER (critical)
+When user is in Demo Mode, show a prominent banner at top:
+- “You’re viewing demo data”
+- Explain Live Mode requires BYOK keys (no platform keys needed).
+- CTA buttons:
+  1) “Go to Integrations” (primary)
+  2) “Start Trial / Upgrade” (future when Stripe enabled)
+Banner must be sticky on dashboard and key feature pages.
+
+C) INTEGRATIONS (BYOK) AS CARDS WITH STATUS + ACTIONS
+Each integration appears as a card with:
+- Name + short description
+- Category tag pill (Tax / Market Data / Listing / Auction)
+- Status indicator: Not connected / Connected / Error
+- Toggle enable/disable (enabled only if connected)
+- Actions: Add key, Test connection, Disable, Remove key
+- Mask secrets in UI; store encrypted in DB (field-level encryption)
+- Show “Last success time” + “Usage last 30 days” counters
+- Provide clear error message on failure and link to docs/help
+
+D) VAT CALCULATOR MINI-APP (reusable)
+Create a VAT Calculator module that is reusable:
+Inputs:
+- VAT Scheme dropdown: EU Reverse Charge, Danish VAT (25%), Margin Scheme, Private Purchase
+- Purchase Price
+- Expected Resale Price
+Outputs (live-updating):
+- Purchase VAT (paid)
+- Sales VAT (collected)
+- VAT Return (deductible)
+- Net VAT to Pay (highlighted)
+- Capital Binding indicator (Minimal/Medium/High) with short explanation
+This module must be available:
+1) as /vat/calculator page
+2) as a tab within Vehicle Detail (uses same engine)
+
+E) DASHBOARD KPI + ACTIVITY FEED
+Dashboard must show KPI cards:
+- Pipeline count
+- Potential Profit
+- Avg ROI
+- Hot Deals count
+- Risk Alerts count
+Include “Recent Activity” feed driven by events/audit logs (pdf_generated, max_bid_calculated, vehicle_imported, status_changed).
+
+F) VEHICLE CARDS: SCORE + RISK BADGES
+Every vehicle card/listing must show:
+- Deal Score badge (0–100)
+- Risk badges (low comps, unknown vat, tax missing, high km, etc.)
+These badges must explain WHY score is lower and link user to fix actions (e.g., connect market data, set VAT scheme, add tax estimate).
+
+G) BILLING PLANS UI (ready for Stripe later)
+Billing page must show:
+- Current plan card (“Demo mode only - no live data access” for Free)
+- Plans: Free (€0), Pro (€299/mo), Team (€799/mo up to 10 users) [values configurable]
+- Upgrade CTA button (disabled if Stripe feature flag off)
