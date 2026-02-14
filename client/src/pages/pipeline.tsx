@@ -224,45 +224,49 @@ export default function Pipeline() {
                   <Card key={v.id} className="p-3" data-testid={`card-pipeline-${v.id}`}>
                     <div className="flex items-center gap-3">
                       <DealScoreBadge score={v.dealScore || 0} size="sm" />
-                      <Link href={`/vehicle/${v.id}`}>
-                        <div className="flex-1 min-w-0 cursor-pointer">
-                          <p className="text-sm font-medium truncate">{v.make} {v.model} {v.variant || ""}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {v.year} &middot; {formatNumber(v.mileageKm)} km &middot; {v.sourceCountry}
-                          </p>
-                        </div>
-                      </Link>
-                      <div className="text-right flex-shrink-0">
-                        <p className={`text-sm font-semibold tabular-nums ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                          {formatCurrency(profit, "DKK")}
-                        </p>
-                        <p className="text-xs text-muted-foreground tabular-nums">{roi.toFixed(1)}% ROI</p>
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/vehicle/${v.id}`}>
+                          <div className="cursor-pointer">
+                            <p className="text-sm font-medium truncate">{v.make} {v.model} {v.variant || ""}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {v.year} &middot; {formatNumber(v.mileageKm)} km &middot; {v.sourceCountry}
+                            </p>
+                          </div>
+                        </Link>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Select
-                          value={v.status}
-                          onValueChange={(newStatus) => statusMutation.mutate({ id: v.id, status: newStatus })}
-                        >
-                          <SelectTrigger className="w-[140px] text-xs" data-testid={`select-status-${v.id}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VEHICLE_STATUSES.map(s => (
-                              <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {nextStatus && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => statusMutation.mutate({ id: v.id, status: nextStatus })}
-                            disabled={statusMutation.isPending}
-                            data-testid={`button-advance-${v.id}`}
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="text-right min-w-[100px]">
+                          <p className={`text-sm font-semibold tabular-nums ${profit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                            {formatCurrency(profit, "DKK")}
+                          </p>
+                          <p className="text-xs text-muted-foreground tabular-nums">{roi.toFixed(1)}% ROI</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Select
+                            value={v.status}
+                            onValueChange={(newStatus) => statusMutation.mutate({ id: v.id, status: newStatus })}
                           >
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        )}
+                            <SelectTrigger className="w-[140px] text-xs" data-testid={`select-status-${v.id}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {VEHICLE_STATUSES.map(s => (
+                                <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {nextStatus && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => statusMutation.mutate({ id: v.id, status: nextStatus })}
+                              disabled={statusMutation.isPending}
+                              data-testid={`button-advance-${v.id}`}
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                     {showChecklist && <ReadyChecklist v={v} />}
