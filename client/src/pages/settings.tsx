@@ -466,6 +466,37 @@ export default function Settings() {
               </Button>
             </div>
           </Card>
+
+          <Card className="p-4 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold">{t("settings.storage_usage")}</h3>
+              <p className="text-xs text-muted-foreground">{t("settings.storage_desc")}</p>
+            </div>
+            
+            <div className="p-4 rounded-xl border border-border/40 bg-muted/20">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-background border border-border/40 shadow-sm text-muted-foreground">
+                    <CreditCard className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{t("settings.storage_label")}</p>
+                    <p className="text-xs text-muted-foreground">{t("settings.storage_used").replace("{used}", "2.4 GB").replace("{total}", "10 GB")}</p>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-[#FF6319]">24%</span>
+              </div>
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-[#FF6319] rounded-full" style={{ width: "24%" }}></div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" className="text-xs">
+                {t("settings.buy_extra")}
+              </Button>
+            </div>
+          </Card>
         </TabsContent>
 
         <TabsContent value="integrations">
