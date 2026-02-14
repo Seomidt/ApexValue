@@ -8,13 +8,79 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VehicleCard } from "@/components/vehicle-card";
 import { DealScoreLegend } from "@/components/deal-score-badge";
 import { getDealRecommendation, calcProfit, calcROI } from "@/lib/calculations";
-import { Search, SlidersHorizontal, Flame, CheckCircle2, AlertTriangle, Car, ArrowUpDown } from "lucide-react";
+import { Search, SlidersHorizontal, Flame, CheckCircle2, AlertTriangle, Car, ArrowUpDown, X, Info } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { Link } from "wouter";
+import { useAppMode } from "@/App";
 import type { Vehicle } from "@shared/schema";
 import { MARKET_COUNTRIES } from "@shared/schema";
+
+function DemoBanner() {
+  const { mode } = useAppMode();
+  const { t } = useLanguage();
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem("apexvalue_demo_banner_dismissed") === "true");
+
+  if (mode !== "demo") return null;
+
+  if (dismissed) {
+    return (
+      <div className="flex justify-end mb-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-amber-600 dark:text-amber-400 text-xs"
+          onClick={() => { setDismissed(false); localStorage.removeItem("apexvalue_demo_banner_dismissed"); }}
+          data-testid="button-show-demo-info"
+        >
+          <Info className="w-3.5 h-3.5 mr-1" /> {t("demo.show_info")}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mb-4 flex items-start gap-3"
+      data-testid="banner-demo-mode"
+    >
+      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold">{t("demo.banner_title")}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{t("demo.banner_desc")}</p>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <Link href="/settings">
+            <Button className="bg-[#FF6319] text-white" data-testid="button-go-integrations">
+              {t("demo.go_integrations")}
+            </Button>
+          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button variant="outline" disabled>
+                  {t("demo.start_trial")}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{t("common.coming_soon")}</TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="flex-shrink-0"
+        onClick={() => { setDismissed(true); localStorage.setItem("apexvalue_demo_banner_dismissed", "true"); }}
+        data-testid="button-dismiss-demo-banner"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
 
 type SortOption = "score_desc" | "profit_desc" | "roi_desc" | "price_asc" | "price_desc" | "year_desc" | "km_asc";
 
@@ -129,6 +195,7 @@ export default function AuctionFinder() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4">
+      <DemoBanner />
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold" data-testid="text-page-title">{t("auction.title")}</h1>

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DealScoreBadge, DealRecommendationBadge } from "@/components/deal-score-badge";
 import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags } from "@/lib/calculations";
@@ -27,6 +28,91 @@ function useVehicleThumbnail(vehicle: Vehicle): string {
   if (isDirectUrl) return firstKey;
   const found = images?.find(i => i.key === firstKey);
   return found?.url || placeholder;
+}
+
+interface RiskBadgeInfo {
+  label: string;
+  tooltip: string;
+  variant: "amber" | "red";
+  link?: string;
+}
+
+function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
+  if (flag.includes("momstype") || flag.includes("Ukendt moms")) {
+    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/vat/calculator" };
+  }
+  if (flag.includes("registreringsafgift") || flag.includes("afgift")) {
+    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/vat-tax" };
+  }
+  if (flag.includes("kilometertal") || flag.includes("km")) {
+    return { label: t("risk.high_mileage"), tooltip: t("risk.fix_mileage"), variant: "amber" };
+  }
+  if (flag.includes("kapitalbinding") || flag.includes("kapital")) {
+    return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "amber" };
+  }
+  if (flag.includes("Ældre") || flag.includes("bil")) {
+    return { label: t("risk.old_vehicle"), tooltip: t("risk.fix_old"), variant: "amber" };
+  }
+  if (flag.includes("fortjeneste") || flag.includes("Negativ")) {
+    return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "red" };
+  }
+  if (flag.includes("comps") || flag.includes("sammenlign") || flag.includes("market")) {
+    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/settings" };
+  }
+  return { label: flag, tooltip: flag, variant: "amber" };
+}
+
+function VehicleRiskBadges({ vehicle }: { vehicle: Vehicle }) {
+  const { t } = useLanguage();
+  const riskFlags = getRiskFlags(vehicle);
+
+  if (riskFlags.length === 0) {
+    return (
+      <div className="flex flex-wrap gap-1" data-testid={`risk-badges-${vehicle.id}`}>
+        <Badge variant="outline" className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 no-default-active-elevate" data-testid={`badge-low-risk-${vehicle.id}`}>
+          {t("risk.low_risk")}
+        </Badge>
+      </div>
+    );
+  }
+
+  const mapped = riskFlags.map(f => mapRiskFlag(f, t));
+  const visible = mapped.slice(0, 3);
+  const remaining = mapped.length - 3;
+
+  return (
+    <div className="flex flex-wrap gap-1" data-testid={`risk-badges-${vehicle.id}`}>
+      {visible.map((badge, i) => {
+        const badgeClass = badge.variant === "red"
+          ? "text-[10px] bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30 no-default-active-elevate"
+          : "text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 no-default-active-elevate";
+
+        const badgeEl = (
+          <Badge variant="outline" className={badgeClass} data-testid={`badge-risk-${vehicle.id}-${i}`}>
+            {badge.label}
+          </Badge>
+        );
+
+        return (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              {badge.link ? (
+                <Link href={badge.link}>{badgeEl}</Link>
+              ) : (
+                <span>{badgeEl}</span>
+              )}
+            </TooltipTrigger>
+            <TooltipContent className="text-xs max-w-[200px]">{badge.tooltip}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+      {remaining > 0 && (
+        <Badge variant="outline" className="text-[10px] text-muted-foreground no-default-active-elevate" data-testid={`badge-risk-more-${vehicle.id}`}>
+          +{remaining} {t("risk.more")}
+        </Badge>
+      )}
+    </div>
+  );
 }
 
 interface VehicleCardProps {
@@ -119,15 +205,7 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
             </div>
           </div>
 
-          {riskFlags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {riskFlags.map((flag) => (
-                <Badge key={flag} variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
-                  {flag}
-                </Badge>
-              ))}
-            </div>
-          )}
+          <VehicleRiskBadges vehicle={v} />
 
           <div className="flex items-center gap-1 mt-auto pt-1">
             <Link href={`/vehicle/${v.id}`}>

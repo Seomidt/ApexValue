@@ -7,17 +7,83 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DealScoreBadge, DealRecommendationBadge, DealScoreLegend } from "@/components/deal-score-badge";
 import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcTotalCost, calcProfit, calcROI, calcMaxBid, getRiskFlags, getDealRecommendation } from "@/lib/calculations";
 import {
   GitBranch, TrendingUp, BarChart3, Flame, AlertTriangle,
   Plus, FileText, ArrowRight, Car, Search, Calculator,
-  Calendar, Gauge, Fuel, Settings2, Eye, MapPin, ExternalLink
+  Calendar, Gauge, Fuel, Settings2, Eye, MapPin, ExternalLink,
+  X, Info, Activity
 } from "lucide-react";
 import { Link } from "wouter";
-import type { Vehicle } from "@shared/schema";
+import { useAppMode } from "@/App";
+import type { Vehicle, Event } from "@shared/schema";
 import { MARKET_COUNTRIES } from "@shared/schema";
+
+function DemoBanner() {
+  const { mode } = useAppMode();
+  const { t } = useLanguage();
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem("apexvalue_demo_banner_dismissed") === "true");
+
+  if (mode !== "demo") return null;
+
+  if (dismissed) {
+    return (
+      <div className="flex justify-end mb-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-amber-600 dark:text-amber-400 text-xs"
+          onClick={() => { setDismissed(false); localStorage.removeItem("apexvalue_demo_banner_dismissed"); }}
+          data-testid="button-show-demo-info"
+        >
+          <Info className="w-3.5 h-3.5 mr-1" /> {t("demo.show_info")}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mb-4 flex items-start gap-3"
+      data-testid="banner-demo-mode"
+    >
+      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold">{t("demo.banner_title")}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{t("demo.banner_desc")}</p>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <Link href="/settings">
+            <Button className="bg-[#FF6319] text-white" data-testid="button-go-integrations">
+              {t("demo.go_integrations")}
+            </Button>
+          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button variant="outline" disabled>
+                  {t("demo.start_trial")}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{t("common.coming_soon")}</TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="flex-shrink-0"
+        onClick={() => { setDismissed(true); localStorage.setItem("apexvalue_demo_banner_dismissed", "true"); }}
+        data-testid="button-dismiss-demo-banner"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
 
 function KPICard({ title, value, subtitle, icon: Icon, accent }: {
   title: string; value: string; subtitle?: string; icon: any; accent?: boolean;
@@ -35,6 +101,91 @@ function KPICard({ title, value, subtitle, icon: Icon, accent }: {
         </div>
       </div>
     </Card>
+  );
+}
+
+interface RiskBadgeInfo {
+  label: string;
+  tooltip: string;
+  variant: "amber" | "red";
+  link?: string;
+}
+
+function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
+  if (flag.includes("momstype") || flag.includes("Ukendt moms")) {
+    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/vat/calculator" };
+  }
+  if (flag.includes("registreringsafgift") || flag.includes("afgift")) {
+    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/vat-tax" };
+  }
+  if (flag.includes("kilometertal") || flag.includes("km")) {
+    return { label: t("risk.high_mileage"), tooltip: t("risk.fix_mileage"), variant: "amber" };
+  }
+  if (flag.includes("kapitalbinding") || flag.includes("kapital")) {
+    return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "amber" };
+  }
+  if (flag.includes("Ældre") || flag.includes("bil")) {
+    return { label: t("risk.old_vehicle"), tooltip: t("risk.fix_old"), variant: "amber" };
+  }
+  if (flag.includes("fortjeneste") || flag.includes("Negativ")) {
+    return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "red" };
+  }
+  if (flag.includes("comps") || flag.includes("sammenlign") || flag.includes("market")) {
+    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/settings" };
+  }
+  return { label: flag, tooltip: flag, variant: "amber" };
+}
+
+function RiskBadgesRow({ vehicle }: { vehicle: Vehicle }) {
+  const { t } = useLanguage();
+  const riskFlags = getRiskFlags(vehicle);
+
+  if (riskFlags.length === 0) {
+    return (
+      <div className="flex flex-wrap gap-1 mt-1" data-testid={`risk-badges-${vehicle.id}`}>
+        <Badge variant="outline" className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 no-default-active-elevate" data-testid={`badge-low-risk-${vehicle.id}`}>
+          {t("risk.low_risk")}
+        </Badge>
+      </div>
+    );
+  }
+
+  const mapped = riskFlags.map(f => mapRiskFlag(f, t));
+  const visible = mapped.slice(0, 3);
+  const remaining = mapped.length - 3;
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1" data-testid={`risk-badges-${vehicle.id}`}>
+      {visible.map((badge, i) => {
+        const badgeClass = badge.variant === "red"
+          ? "text-[10px] bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30 no-default-active-elevate"
+          : "text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 no-default-active-elevate";
+
+        const badgeEl = (
+          <Badge variant="outline" className={badgeClass} data-testid={`badge-risk-${vehicle.id}-${i}`}>
+            {badge.label}
+          </Badge>
+        );
+
+        return (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              {badge.link ? (
+                <Link href={badge.link}>{badgeEl}</Link>
+              ) : (
+                <span>{badgeEl}</span>
+              )}
+            </TooltipTrigger>
+            <TooltipContent className="text-xs max-w-[200px]">{badge.tooltip}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+      {remaining > 0 && (
+        <Badge variant="outline" className="text-[10px] text-muted-foreground no-default-active-elevate" data-testid={`badge-risk-more-${vehicle.id}`}>
+          +{remaining} {t("risk.more")}
+        </Badge>
+      )}
+    </div>
   );
 }
 
@@ -86,6 +237,8 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
             </Button>
           </Link>
         </div>
+
+        <RiskBadgesRow vehicle={v} />
       </div>
     </Card>
   );
@@ -237,6 +390,91 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
   );
 }
 
+function getEventIcon(eventType: string) {
+  switch (eventType) {
+    case "pdf_generated": return FileText;
+    case "max_bid_calculated": return Calculator;
+    case "vehicle_imported": return Car;
+    case "status_changed": return GitBranch;
+    default: return Activity;
+  }
+}
+
+function formatRelativeTime(date: string | Date, t: (key: string) => string): string {
+  const now = new Date();
+  const then = new Date(date);
+  const diffMs = now.getTime() - then.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMinutes < 5) return t("dashboard.just_now");
+  if (diffHours < 1) return `${diffMinutes} min`;
+  if (diffHours < 24) return `${diffHours} ${t("dashboard.hours_ago")}`;
+  if (diffDays === 1) return t("dashboard.yesterday");
+  return `${diffDays} ${t("dashboard.days_ago")}`;
+}
+
+function RecentActivityFeed() {
+  const { t } = useLanguage();
+  const { data: events, isLoading } = useQuery<Event[]>({
+    queryKey: ["/api/events"],
+  });
+
+  const recentEvents = (events || []).slice(0, 10);
+
+  return (
+    <Card className="p-4" data-testid="card-recent-activity">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Activity className="w-4 h-4" /> {t("dashboard.recent_activity")}
+        </h3>
+        <Link href="#">
+          <Button size="sm" variant="outline" data-testid="button-view-all-activity">
+            {t("common.view_all")} <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
+        </Link>
+      </div>
+      {isLoading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 rounded-md" />
+          ))}
+        </div>
+      ) : recentEvents.length > 0 ? (
+        <div className="space-y-1" data-testid="list-recent-events">
+          {recentEvents.map((event) => {
+            const IconComp = getEventIcon(event.eventType);
+            const metadata = event.metadata as Record<string, string> | null;
+            const description = metadata?.description || event.eventType.replace(/_/g, " ");
+            return (
+              <div
+                key={event.id}
+                className="flex items-center gap-3 py-2 px-2 rounded-md hover-elevate"
+                data-testid={`row-event-${event.id}`}
+              >
+                <div className="flex-shrink-0 w-7 h-7 rounded-md bg-accent flex items-center justify-center">
+                  <IconComp className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate" data-testid={`text-event-desc-${event.id}`}>{description}</p>
+                </div>
+                <span className="text-[10px] text-muted-foreground flex-shrink-0 tabular-nums" data-testid={`text-event-time-${event.id}`}>
+                  {event.createdAt ? formatRelativeTime(event.createdAt, t) : ""}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground text-center py-4" data-testid="text-no-activity">
+          {t("dashboard.no_activity")}
+        </p>
+      )}
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
@@ -253,11 +491,15 @@ export default function Dashboard() {
   const hotDeals = [...allVehicles].filter(v => (v.dealScore || 0) >= 70).sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0));
 
   const totalResaleEstimate = pipelineVehicles.reduce((sum, v) => sum + (v.resaleNormal || 0), 0);
-  const totalRegistrationTax = pipelineVehicles.reduce((sum, v) => sum + (v.registrationTax || 0), 0);
   const totalPotentialProfit = pipelineVehicles.reduce((sum, v) => sum + calcProfit(v, "normal"), 0);
+  const hotDealsCount = allVehicles.filter(v => (v.dealScore || 0) >= 70).length;
+  const riskAlertsCount = allVehicles.filter(v => getRiskFlags(v).length > 0).length;
+  const avgROI = pipelineVehicles.length > 0
+    ? pipelineVehicles.reduce((sum, v) => sum + calcROI(v, "normal"), 0) / pipelineVehicles.length
+    : 0;
 
   const uniqueMakes = useMemo(() => {
-    const makes = [...new Set(allVehicles.map(v => v.make))].sort();
+    const makes = Array.from(new Set(allVehicles.map(v => v.make))).sort();
     return makes;
   }, [allVehicles]);
 
@@ -308,7 +550,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <DemoBanner />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KPICard
           title={t("dashboard.current_leads")}
           value={String(pipelineVehicles.length)}
@@ -322,9 +565,9 @@ export default function Dashboard() {
           icon={TrendingUp}
         />
         <KPICard
-          title={t("dashboard.expected_tax")}
-          value={formatCurrency(totalRegistrationTax, "DKK")}
-          subtitle={t("dashboard.total_reg_tax")}
+          title={t("dashboard.avg_roi")}
+          value={`${avgROI.toFixed(1)}%`}
+          subtitle={t("dashboard.across_pipeline")}
           icon={BarChart3}
         />
         <KPICard
@@ -333,6 +576,17 @@ export default function Dashboard() {
           subtitle={t("dashboard.across_pipeline")}
           icon={Flame}
           accent
+        />
+        <KPICard
+          title={t("dashboard.hot_deals_count")}
+          value={String(hotDealsCount)}
+          icon={Flame}
+          accent
+        />
+        <KPICard
+          title={t("dashboard.risk_alerts")}
+          value={String(riskAlertsCount)}
+          icon={AlertTriangle}
         />
       </div>
 
@@ -436,6 +690,8 @@ export default function Dashboard() {
       </div>
 
       <WatchlistTable vehicles={allVehicles} />
+
+      <RecentActivityFeed />
 
       <Card className="p-4">
         <h2 className="text-sm font-semibold mb-3">{t("dashboard.quick_actions")}</h2>

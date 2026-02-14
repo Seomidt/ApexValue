@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, Receipt, Layers, Settings,
-  FileText, LogOut, Sun, Moon, GitCompareArrows, Shield
+  FileText, LogOut, Sun, Moon, GitCompareArrows, Shield, Calculator
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel,
@@ -28,6 +28,7 @@ export function AppSidebar() {
     { title: t("nav.pipeline"), url: "/pipeline", icon: GitBranch },
     { title: t("nav.compare"), url: "/compare", icon: GitCompareArrows },
     { title: t("nav.vat_tax"), url: "/vat-tax", icon: Receipt },
+    { title: t("nav.vat_calculator"), url: "/vat/calculator", icon: Calculator },
     { title: t("nav.cost_templates"), url: "/cost-templates", icon: Layers },
     { title: t("nav.reports"), url: "/reports", icon: FileText },
   ];

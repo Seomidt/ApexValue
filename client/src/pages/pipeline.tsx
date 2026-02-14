@@ -1,18 +1,84 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DealScoreBadge } from "@/components/deal-score-badge";
 import { formatCurrency, formatNumber, useLanguage } from "@/lib/i18n";
 import { calcProfit, calcROI } from "@/lib/calculations";
 import { VEHICLE_STATUSES } from "@shared/schema";
-import { ArrowRight, Car, GitBranch, ChevronRight, Check, Camera, List, FileText, Receipt, CreditCard, Tag } from "lucide-react";
+import { ArrowRight, Car, GitBranch, ChevronRight, Check, Camera, List, FileText, Receipt, CreditCard, Tag, AlertTriangle, X, Info } from "lucide-react";
 import { Link } from "wouter";
+import { useAppMode } from "@/App";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Vehicle } from "@shared/schema";
+
+function DemoBanner() {
+  const { mode } = useAppMode();
+  const { t } = useLanguage();
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem("apexvalue_demo_banner_dismissed") === "true");
+
+  if (mode !== "demo") return null;
+
+  if (dismissed) {
+    return (
+      <div className="flex justify-end mb-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-amber-600 dark:text-amber-400 text-xs"
+          onClick={() => { setDismissed(false); localStorage.removeItem("apexvalue_demo_banner_dismissed"); }}
+          data-testid="button-show-demo-info"
+        >
+          <Info className="w-3.5 h-3.5 mr-1" /> {t("demo.show_info")}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mb-4 flex items-start gap-3"
+      data-testid="banner-demo-mode"
+    >
+      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold">{t("demo.banner_title")}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{t("demo.banner_desc")}</p>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <Link href="/settings">
+            <Button className="bg-[#FF6319] text-white" data-testid="button-go-integrations">
+              {t("demo.go_integrations")}
+            </Button>
+          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button variant="outline" disabled>
+                  {t("demo.start_trial")}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{t("common.coming_soon")}</TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="flex-shrink-0"
+        onClick={() => { setDismissed(true); localStorage.setItem("apexvalue_demo_banner_dismissed", "true"); }}
+        data-testid="button-dismiss-demo-banner"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
 
 const statusColors: Record<string, string> = {
   found: "bg-muted text-muted-foreground",
@@ -110,6 +176,7 @@ export default function Pipeline() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4">
+      <DemoBanner />
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2" data-testid="text-page-title">

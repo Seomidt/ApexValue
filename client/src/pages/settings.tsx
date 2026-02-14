@@ -11,10 +11,19 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppMode } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save } from "lucide-react";
+import { Settings as SettingsIcon, User, Building2, Users, Key, Globe, Shield, CheckCircle2, XCircle, Eye, EyeOff, Loader2, Zap, AlertTriangle, Save, CreditCard, Info } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { MARKET_COUNTRIES } from "@shared/schema";
 import { useLanguage, LANGUAGE_LABELS, type SupportedLanguage } from "@/lib/i18n";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const CATEGORY_MAP: Record<string, string> = {
+  market: "settings.category_market",
+  auction: "settings.category_auction",
+  tax: "settings.category_tax",
+  listing: "settings.category_listing",
+};
 
 const CONNECTORS = [
   { name: "mobile.de API", descKey: "settings.connector_mobile_desc", key: "MOBILE_DE", category: "market" },
@@ -44,7 +53,12 @@ function ConnectorCard({ connector, isConfigured, onConfigure, testResult, isTes
     <div className="p-3 rounded-md border space-y-2" data-testid={`connector-${connector.key}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">{connector.name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-medium">{connector.name}</p>
+            <Badge variant="secondary" className="text-[10px]" data-testid={`badge-category-${connector.key}`}>
+              {t(CATEGORY_MAP[connector.category])}
+            </Badge>
+          </div>
           <p className="text-xs text-muted-foreground">{t(connector.descKey)}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -239,8 +253,15 @@ export default function Settings() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>(currentLanguage);
   const [orgDirty, setOrgDirty] = useState(false);
 
+  const [companyName, setCompanyName] = useState(() => localStorage.getItem("apexvalue_org_name") || "");
+  const [cvrVatId, setCvrVatId] = useState(() => localStorage.getItem("apexvalue_cvr") || "");
+  const [companyAddress, setCompanyAddress] = useState(() => localStorage.getItem("apexvalue_address") || "");
+
   const handleSaveOrgSettings = () => {
     localStorage.setItem("apexvalue_market", marketCountry);
+    localStorage.setItem("apexvalue_org_name", companyName);
+    localStorage.setItem("apexvalue_cvr", cvrVatId);
+    localStorage.setItem("apexvalue_address", companyAddress);
     setGlobalLanguage(selectedLanguage as SupportedLanguage);
     setOrgDirty(false);
     toast({ title: t("settings.saved"), description: t("settings.saved_desc") });
@@ -275,6 +296,13 @@ export default function Settings() {
     }
   };
 
+  const userInitials = [user?.firstName, user?.lastName]
+    .filter(Boolean)
+    .map(n => n?.charAt(0).toUpperCase())
+    .join("") || "U";
+
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "";
+
   return (
     <div className="p-4 sm:p-6 space-y-4">
       <div>
@@ -295,61 +323,37 @@ export default function Settings() {
           <TabsTrigger value="integrations" data-testid="tab-integrations">
             <Key className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_integrations")}
           </TabsTrigger>
+          <TabsTrigger value="billing" data-testid="tab-billing">
+            <CreditCard className="w-3.5 h-3.5 mr-1" /> {t("settings.tab_billing")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
           <Card className="p-4 space-y-4">
             <h3 className="text-sm font-semibold">{t("settings.profile")}</h3>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16" data-testid="img-avatar">
+                <AvatarImage src={user?.profileImageUrl || undefined} alt={fullName} />
+                <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium" data-testid="text-profile-name">{fullName || t("settings.demo_user")}</p>
+                <p className="text-sm text-muted-foreground" data-testid="text-profile-email">{user?.email || ""}</p>
+                <Badge variant="secondary" className="mt-1">{t("settings.demo_user")}</Badge>
+              </div>
+            </div>
+            <Separator />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">{t("common.name")}</Label>
-                <Input value={user?.firstName || ""} readOnly data-testid="input-profile-name" />
+                <Input value={fullName} readOnly data-testid="input-profile-name" />
               </div>
               <div>
                 <Label className="text-xs">{t("common.email")}</Label>
                 <Input value={user?.email || ""} readOnly data-testid="input-profile-email" />
               </div>
             </div>
-            <div>
-              <Label className="text-xs">{t("common.role")}</Label>
-              <div className="mt-1">
-                <Badge variant="secondary">{t("settings.demo_user")}</Badge>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="organization">
-          <Card className="p-4 space-y-4">
-            <h3 className="text-sm font-semibold">{t("settings.tab_organization")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">{t("settings.org_name")}</Label>
-                <Input value="Demo Organisation" readOnly data-testid="input-org-name" />
-              </div>
-              <div>
-                <Label className="text-xs">{t("settings.plan")}</Label>
-                <div className="mt-1">
-                  <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">{t("settings.free_demo")}</Badge>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">{t("settings.market_country")}</Label>
-                <Select value={marketCountry} onValueChange={(v) => { setMarketCountry(v); setOrgDirty(true); }}>
-                  <SelectTrigger data-testid="select-market-country">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MARKET_COUNTRIES.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {c.name} ({c.currency})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div>
                 <Label className="text-xs">{t("settings.language")}</Label>
                 <Select value={selectedLanguage} onValueChange={(v) => { setSelectedLanguage(v); setOrgDirty(true); }}>
@@ -363,6 +367,72 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label className="text-xs">{t("settings.market_country")}</Label>
+                <Select value={marketCountry} onValueChange={(v) => { setMarketCountry(v); setOrgDirty(true); }}>
+                  <SelectTrigger data-testid="select-market-country">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MARKET_COUNTRIES.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.flag} {c.name} ({c.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSaveOrgSettings} disabled={!orgDirty} data-testid="button-save-profile-settings">
+                <Save className="w-3.5 h-3.5 mr-1.5" /> {t("settings.save_settings")}
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="organization">
+          <Card className="p-4 space-y-4">
+            <h3 className="text-sm font-semibold">{t("settings.tab_organization")}</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">{t("settings.company_name")}</Label>
+                <Input
+                  value={companyName}
+                  onChange={(e) => { setCompanyName(e.target.value); setOrgDirty(true); }}
+                  placeholder={t("settings.company_name")}
+                  data-testid="input-company-name"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">{t("settings.cvr_vat_id")}</Label>
+                <Input
+                  value={cvrVatId}
+                  onChange={(e) => { setCvrVatId(e.target.value); setOrgDirty(true); }}
+                  placeholder={t("settings.cvr_vat_id")}
+                  data-testid="input-cvr-vat"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">{t("settings.company_address")}</Label>
+              <Input
+                value={companyAddress}
+                onChange={(e) => { setCompanyAddress(e.target.value); setOrgDirty(true); }}
+                placeholder={t("settings.company_address")}
+                data-testid="input-company-address"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">{t("settings.plan")}</Label>
+              <div className="mt-1">
+                <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate">{t("settings.free_demo")}</Badge>
+              </div>
+            </div>
+            <Separator />
+            <div className="flex items-start gap-2 text-xs text-muted-foreground p-3 rounded-md border">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{t("settings.logo_hint")}</span>
             </div>
             <Separator />
             <div>
@@ -390,9 +460,14 @@ export default function Settings() {
                 {mode === "demo" ? `${t("mode.demo")} Mode` : `${t("mode.live")} Mode`}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("settings.byok_desc")}
-            </p>
+
+            <div className="flex items-start gap-3 p-3 rounded-md border bg-[#B9D9EB]/10 dark:bg-[#002776]/10" data-testid="banner-byok">
+              <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#002776] dark:text-[#B9D9EB]" />
+              <p className="text-xs text-muted-foreground">
+                {t("settings.byok_banner")}
+              </p>
+            </div>
+
             <Separator />
 
             {configuring && (
@@ -440,6 +515,114 @@ export default function Settings() {
               <span>{t("settings.upgrade_hint")}</span>
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="billing">
+          <div className="space-y-4">
+            <Card className="p-4 space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <CreditCard className="w-4 h-4" /> {t("billing.title")}
+              </h3>
+              <div className="flex items-center gap-3">
+                <Badge className="bg-primary/15 text-primary no-default-hover-elevate no-default-active-elevate" data-testid="badge-current-plan">
+                  {t("billing.current_plan")}: {t("billing.free_plan")}
+                </Badge>
+                <span className="text-xs text-muted-foreground" data-testid="text-plan-desc">{t("billing.free_desc")}</span>
+              </div>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-4 space-y-3 border-2" data-testid="card-plan-free">
+                <div>
+                  <h4 className="text-sm font-semibold">{t("billing.free_plan")}</h4>
+                  <p className="text-2xl font-bold mt-1">
+                    &euro;0<span className="text-sm font-normal text-muted-foreground">{t("billing.per_month")}</span>
+                  </p>
+                </div>
+                <Separator />
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                    {t("billing.features_free")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <User className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    {t("billing.users_1")}
+                  </li>
+                </ul>
+                <Button variant="outline" disabled className="w-full" data-testid="button-current-plan">
+                  {t("billing.current_plan")}
+                </Button>
+              </Card>
+
+              <Card className="p-4 space-y-3 border-2 border-[#FF6319]" data-testid="card-plan-pro">
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-sm font-semibold">{t("billing.pro_plan")}</h4>
+                    <Badge className="bg-[#FF6319] text-white no-default-hover-elevate no-default-active-elevate text-[10px]">Popular</Badge>
+                  </div>
+                  <p className="text-2xl font-bold mt-1">
+                    &euro;299<span className="text-sm font-normal text-muted-foreground">{t("billing.per_month")}</span>
+                  </p>
+                </div>
+                <Separator />
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                    {t("billing.features_pro")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    {t("billing.users_3")}
+                  </li>
+                </ul>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full inline-block">
+                      <Button className="w-full bg-[#FF6319] text-white border-[#FF6319]" disabled data-testid="button-upgrade-pro">
+                        {t("billing.upgrade")}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("billing.coming_soon")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </Card>
+
+              <Card className="p-4 space-y-3 border-2 border-[#002776]" data-testid="card-plan-team">
+                <div>
+                  <h4 className="text-sm font-semibold">{t("billing.team_plan")}</h4>
+                  <p className="text-2xl font-bold mt-1">
+                    &euro;799<span className="text-sm font-normal text-muted-foreground">{t("billing.per_month")}</span>
+                  </p>
+                </div>
+                <Separator />
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                    {t("billing.features_team")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    {t("billing.users_10")}
+                  </li>
+                </ul>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full inline-block">
+                      <Button variant="outline" className="w-full border-[#002776] text-[#002776] dark:text-[#B9D9EB] dark:border-[#B9D9EB]" disabled data-testid="button-upgrade-team">
+                        {t("billing.upgrade")}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("billing.coming_soon")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
       </Tabs>

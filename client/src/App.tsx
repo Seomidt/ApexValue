@@ -25,6 +25,7 @@ import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import Compare from "@/pages/compare";
 import Admin from "@/pages/admin";
+import VatCalculator from "@/pages/vat-calculator";
 
 type AppMode = "demo" | "live";
 const ModeContext = createContext<{ mode: AppMode; setMode: (m: AppMode) => void }>({ mode: "demo", setMode: () => {} });
@@ -38,6 +39,7 @@ function AppRouter() {
       <Route path="/vehicle/:id" component={VehicleDetail} />
       <Route path="/pipeline" component={Pipeline} />
       <Route path="/vat-tax" component={VatTax} />
+      <Route path="/vat/calculator" component={VatCalculator} />
       <Route path="/cost-templates" component={CostTemplates} />
       <Route path="/reports" component={Reports} />
       <Route path="/compare" component={Compare} />
