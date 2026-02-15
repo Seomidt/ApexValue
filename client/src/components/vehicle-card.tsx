@@ -39,10 +39,10 @@ interface RiskBadgeInfo {
 
 function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
   if (flag.includes("momstype") || flag.includes("Ukendt moms")) {
-    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/vat/calculator" };
+    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/app/vat/calculator" };
   }
   if (flag.includes("registreringsafgift") || flag.includes("afgift")) {
-    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/vat-tax" };
+    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/app/vat-tax" };
   }
   if (flag.includes("kilometertal") || flag.includes("km")) {
     return { label: t("risk.high_mileage"), tooltip: t("risk.fix_mileage"), variant: "amber" };
@@ -57,7 +57,7 @@ function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
     return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "red" };
   }
   if (flag.includes("comps") || flag.includes("sammenlign") || flag.includes("market")) {
-    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/settings" };
+    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/app/settings" };
   }
   return { label: flag, tooltip: flag, variant: "amber" };
 }
@@ -154,7 +154,7 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
         <div className="flex-1 p-3 flex flex-col gap-2 min-w-0">
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="min-w-0">
-              <Link href={`/vehicle/${v.id}`}>
+              <Link href={`/app/vehicle/${v.id}`}>
                 <h3 className="font-semibold text-sm truncate cursor-pointer" data-testid={`text-vehicle-title-${v.id}`}>
                   {v.make} {v.model} {v.variant || ""}
                 </h3>
@@ -208,7 +208,7 @@ export function VehicleCard({ vehicle: v, currency = "DKK" }: VehicleCardProps) 
           <VehicleRiskBadges vehicle={v} />
 
           <div className="flex items-center gap-1 mt-auto pt-1">
-            <Link href={`/vehicle/${v.id}`}>
+            <Link href={`/app/vehicle/${v.id}`}>
               <Button size="sm" variant="ghost" data-testid={`button-view-${v.id}`}>
                 <Eye className="w-3.5 h-3.5 mr-1" /> {t("common.details")}
               </Button>

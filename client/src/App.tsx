@@ -34,17 +34,17 @@ export const useAppMode = () => useContext(ModeContext);
 function AppRouter() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/auction-finder" component={AuctionFinder} />
-      <Route path="/vehicle/:id" component={VehicleDetail} />
-      <Route path="/pipeline" component={Pipeline} />
-      <Route path="/vat-tax" component={VatTax} />
-      <Route path="/vat/calculator" component={VatCalculator} />
-      <Route path="/cost-templates" component={CostTemplates} />
-      <Route path="/reports" component={Reports} />
-      <Route path="/compare" component={Compare} />
-      <Route path="/admin" component={Admin} />
-      <Route path="/settings" component={Settings} />
+      <Route path="/app" component={Dashboard} />
+      <Route path="/app/auction-finder" component={AuctionFinder} />
+      <Route path="/app/vehicle/:id" component={VehicleDetail} />
+      <Route path="/app/pipeline" component={Pipeline} />
+      <Route path="/app/vat-tax" component={VatTax} />
+      <Route path="/app/vat/calculator" component={VatCalculator} />
+      <Route path="/app/cost-templates" component={CostTemplates} />
+      <Route path="/app/reports" component={Reports} />
+      <Route path="/app/compare" component={Compare} />
+      <Route path="/app/admin" component={Admin} />
+      <Route path="/app/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -139,11 +139,11 @@ function AppContent() {
     );
   }
 
-  if (location === "/landing") {
-    return <Landing />;
+  if (location.startsWith("/app")) {
+    return <MainLayout />;
   }
 
-  return <MainLayout />;
+  return <Landing />;
 }
 
 function App() {

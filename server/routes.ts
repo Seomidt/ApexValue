@@ -30,12 +30,6 @@ export async function registerRoutes(
   const MARKETING_BASE_URL = process.env.MARKETING_BASE_URL || "";
 
   app.use((req, res, next) => {
-    if (req.path === "/app" || req.path.startsWith("/app/")) {
-      if (!APP_BASE_URL) return res.redirect("/");
-      const subPath = req.path.replace(/^\/app\/?/, "");
-      const safePath = subPath.replace(/[^a-zA-Z0-9\-_\/]/g, "");
-      return res.redirect(302, `${APP_BASE_URL}/${safePath}`);
-    }
     next();
   });
 
@@ -225,7 +219,7 @@ export async function registerRoutes(
 
   app.post("/api/vehicles/:id/images", upload.array("images", 10), async (req, res) => {
     try {
-      const vehicleId = parseInt(req.params.id);
+      const vehicleId = parseInt(req.params.id as string);
       const vehicle = await storage.getVehicle(vehicleId);
       if (!vehicle) {
         return res.status(404).json({ message: "Bil ikke fundet." });

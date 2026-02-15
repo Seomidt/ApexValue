@@ -18,7 +18,7 @@ export default function NotFound() {
             Den side, du leder efter, findes ikke eller er blevet flyttet.
           </p>
 
-          <Link href="/">
+          <Link href="/app">
             <Button variant="outline" className="mt-4" data-testid="button-back-home">
               <ArrowLeft className="w-4 h-4 mr-1" /> Tilbage til Dashboard
             </Button>

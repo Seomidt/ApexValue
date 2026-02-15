@@ -51,10 +51,10 @@ interface RiskBadgeInfo {
 
 function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
   if (flag.includes("momstype") || flag.includes("Ukendt moms")) {
-    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/vat/calculator" };
+    return { label: t("risk.unknown_vat"), tooltip: t("risk.fix_vat"), variant: "red", link: "/app/vat/calculator" };
   }
   if (flag.includes("registreringsafgift") || flag.includes("afgift")) {
-    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/vat-tax" };
+    return { label: t("risk.tax_missing"), tooltip: t("risk.fix_tax"), variant: "red", link: "/app/vat-tax" };
   }
   if (flag.includes("kilometertal") || flag.includes("km")) {
     return { label: t("risk.high_mileage"), tooltip: t("risk.fix_mileage"), variant: "amber" };
@@ -69,7 +69,7 @@ function mapRiskFlag(flag: string, t: (key: string) => string): RiskBadgeInfo {
     return { label: t("risk.high_capital"), tooltip: t("risk.fix_capital"), variant: "red" };
   }
   if (flag.includes("comps") || flag.includes("sammenlign") || flag.includes("market")) {
-    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/settings" };
+    return { label: t("risk.low_comps"), tooltip: t("risk.fix_market"), variant: "amber", link: "/app/settings" };
   }
   return { label: flag, tooltip: flag, variant: "amber" };
 }
@@ -169,7 +169,7 @@ function VehicleSearchCard({ v }: { v: Vehicle }) {
             <span className="text-xs text-muted-foreground">{v.purchaseCurrency}</span>
             <span className="text-base font-bold ml-1 tabular-nums">{formatNumber(v.purchasePrice || 0)}</span>
           </div>
-          <Link href={`/vehicle/${v.id}`}>
+          <Link href={`/app/vehicle/${v.id}`}>
             <Button size="sm" variant="outline" data-testid={`button-details-${v.id}`}>
               {t("dashboard.see_details")} <ArrowRight className="w-3 h-3 ml-1" />
             </Button>
@@ -275,7 +275,7 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
     <Card className="p-4" data-testid="card-watchlist">
       <div className="flex items-center justify-between gap-2 mb-3">
         <h3 className="text-sm font-semibold">{t("dashboard.watchlist")}</h3>
-        <Link href="/auction-finder">
+        <Link href="/app/auction-finder">
           <Button size="sm" variant="outline" className="text-[#FF6319] border-[#FF6319]/30" data-testid="button-view-all-watchlist">
             {t("common.view_all")} <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
@@ -310,7 +310,7 @@ function WatchlistTable({ vehicles }: { vehicles: Vehicle[] }) {
                     </Badge>
                   </td>
                   <td className="py-2 text-right">
-                    <Link href={`/vehicle/${v.id}`}>
+                    <Link href={`/app/vehicle/${v.id}`}>
                       <Button size="sm" variant="ghost" data-testid={`button-watchlist-view-${v.id}`}>
                         <Eye className="w-3.5 h-3.5" />
                       </Button>
@@ -587,7 +587,7 @@ export default function Dashboard() {
 
           {filteredVehicles.length > 6 && (
             <div className="text-center">
-              <Link href="/auction-finder">
+              <Link href="/app/auction-finder">
                 <Button variant="outline" data-testid="button-view-all-vehicles">
                   {t("dashboard.view_all_vehicles").replace("{count}", String(filteredVehicles.length))} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -608,7 +608,7 @@ export default function Dashboard() {
             {hotDeals.slice(0, 5).map(v => {
               const profit = calcProfit(v, "normal");
               return (
-                <Link key={v.id} href={`/vehicle/${v.id}`}>
+                <Link key={v.id} href={`/app/vehicle/${v.id}`}>
                   <div className="flex items-center gap-2 py-1.5 hover-elevate rounded-md px-1 cursor-pointer"
                        data-testid={`row-hotdeal-${v.id}`}>
                     <DealScoreBadge score={v.dealScore || 0} size="sm" />
@@ -634,17 +634,17 @@ export default function Dashboard() {
       <Card className="p-4">
         <h2 className="text-sm font-semibold mb-3">{t("dashboard.quick_actions")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <Link href="/auction-finder">
+          <Link href="/app/auction-finder">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-new-vehicle">
               <Plus className="w-4 h-4 mr-2" /> {t("dashboard.add_new_car")}
             </Button>
           </Link>
-          <Link href="/pipeline">
+          <Link href="/app/pipeline">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-pipeline">
               <GitBranch className="w-4 h-4 mr-2" /> {t("dashboard.view_pipeline")}
             </Button>
           </Link>
-          <Link href="/reports">
+          <Link href="/app/reports">
             <Button variant="outline" className="w-full justify-start" data-testid="button-quick-pdf">
               <FileText className="w-4 h-4 mr-2" /> {t("dashboard.generate_pdf")}
             </Button>

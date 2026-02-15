@@ -163,7 +163,7 @@ export default function Pipeline() {
                     <div className="flex items-center gap-3">
                       <DealScoreBadge score={v.dealScore || 0} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <Link href={`/vehicle/${v.id}`}>
+                        <Link href={`/app/vehicle/${v.id}`}>
                           <div className="cursor-pointer">
                             <p className="text-sm font-medium truncate">{v.make} {v.model} {v.variant || ""}</p>
                             <p className="text-xs text-muted-foreground">
@@ -221,7 +221,7 @@ export default function Pipeline() {
           <Car className="w-12 h-12 text-muted-foreground mb-3" />
           <h3 className="text-lg font-semibold">{t("pipeline.no_vehicles")}</h3>
           <p className="text-sm text-muted-foreground mt-1">{t("pipeline.add_from_finder")}</p>
-          <Link href="/auction-finder">
+          <Link href="/app/auction-finder">
             <Button className="mt-4">{t("pipeline.browse_vehicles")}</Button>
           </Link>
         </div>

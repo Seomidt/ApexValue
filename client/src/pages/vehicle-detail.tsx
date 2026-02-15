@@ -240,7 +240,7 @@ export default function VehicleDetail() {
     return (
       <div className="p-4 sm:p-6 flex flex-col items-center justify-center py-16">
         <h2 className="text-lg font-semibold">{t("vehicle.not_found")}</h2>
-        <Link href="/auction-finder">
+        <Link href="/app/auction-finder">
           <Button variant="outline" className="mt-4">
             <ArrowLeft className="w-4 h-4 mr-1" /> {t("vehicle.back_to_finder")}
           </Button>
@@ -276,7 +276,7 @@ export default function VehicleDetail() {
   return (
     <div className="p-4 sm:p-6 space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <Link href="/auction-finder">
+        <Link href="/app/auction-finder">
           <Button size="icon" variant="ghost" data-testid="button-back">
             <ArrowLeft className="w-4 h-4" />
           </Button>

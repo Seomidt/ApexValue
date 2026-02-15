@@ -23,28 +23,28 @@ export function AppSidebar() {
   const { t } = useLanguage();
 
   const navItems = [
-    { title: t("nav.dashboard"), url: "/", icon: LayoutDashboard },
-    { title: t("nav.auction_finder"), url: "/auction-finder", icon: Search },
-    { title: t("nav.pipeline"), url: "/pipeline", icon: GitBranch },
-    { title: t("nav.compare"), url: "/compare", icon: GitCompareArrows },
-    { title: t("nav.vat_tax"), url: "/vat-tax", icon: Receipt },
-    { title: t("nav.vat_calculator"), url: "/vat/calculator", icon: Calculator },
-    { title: t("nav.cost_templates"), url: "/cost-templates", icon: Layers },
-    { title: t("nav.reports"), url: "/reports", icon: FileText },
+    { title: t("nav.dashboard"), url: "/app", icon: LayoutDashboard },
+    { title: t("nav.auction_finder"), url: "/app/auction-finder", icon: Search },
+    { title: t("nav.pipeline"), url: "/app/pipeline", icon: GitBranch },
+    { title: t("nav.compare"), url: "/app/compare", icon: GitCompareArrows },
+    { title: t("nav.vat_tax"), url: "/app/vat-tax", icon: Receipt },
+    { title: t("nav.vat_calculator"), url: "/app/vat/calculator", icon: Calculator },
+    { title: t("nav.cost_templates"), url: "/app/cost-templates", icon: Layers },
+    { title: t("nav.reports"), url: "/app/reports", icon: FileText },
   ];
 
-  const settingsItem = { title: t("nav.settings"), url: "/settings", icon: Settings };
-  const adminItem = { title: t("nav.admin"), url: "/admin", icon: Shield };
+  const settingsItem = { title: t("nav.settings"), url: "/app/settings", icon: Settings };
+  const adminItem = { title: t("nav.admin"), url: "/app/admin", icon: Shield };
 
   const isActive = (url: string) => {
-    if (url === "/") return location === "/";
+    if (url === "/app") return location === "/app";
     return location.startsWith(url);
   };
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/" data-testid="link-logo">
+        <Link href="/app" data-testid="link-logo">
           <div className="flex items-center gap-2">
             <img src={logoPath} alt="ApexValue" className="h-10 w-auto" />
           </div>

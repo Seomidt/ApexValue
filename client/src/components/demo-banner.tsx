@@ -45,7 +45,7 @@ export function DemoBanner() {
         <div className="flex items-center gap-2">
           <Button
             className="bg-[#FF6319] text-white font-semibold px-6"
-            onClick={() => setLocation("/settings")}
+            onClick={() => setLocation("/app/settings")}
             data-testid="button-upgrade-pro"
           >
             {t("demo.upgrade_button")}

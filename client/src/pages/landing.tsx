@@ -47,7 +47,7 @@ function getLoginUrl(appBaseUrl: string) {
 
 function getDemoUrl(appBaseUrl: string) {
   if (appBaseUrl) return appBaseUrl;
-  return "/";
+  return "/app";
 }
 
 export default function Landing() {
