@@ -41,7 +41,7 @@ waitForPort = 5000
 [userenv]
 
 [userenv.production]
-APP_BASE_URL = "https://app.apexvalue.net"
+APP_BASE_URL = ""
 MARKETING_BASE_URL = "https://apexvalue.net"
 
 [userenv.development]

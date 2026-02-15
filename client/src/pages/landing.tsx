@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart3, Search, GitBranch, Receipt, FileText, Shield,
+  BarChart3, Search, GitBranch, Receipt, FileText,
   TrendingUp, Target, Globe, ArrowRight, Zap, Play, LogIn
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
@@ -29,42 +28,11 @@ const markets = [
   { code: "FR", nameKey: "landing.market_fr" },
 ];
 
-function useAppUrls() {
-  const [appBaseUrl, setAppBaseUrl] = useState("");
-  useEffect(() => {
-    fetch("/api/config/urls")
-      .then(r => r.json())
-      .then(data => {
-        // If appBaseUrl is the same as current origin, we treat it as empty for local routing
-        const origin = window.location.origin;
-        const baseUrl = data.appBaseUrl || "";
-        if (baseUrl && baseUrl.startsWith(origin)) {
-          setAppBaseUrl("");
-        } else {
-          setAppBaseUrl(baseUrl);
-        }
-      })
-      .catch(() => {});
-  }, []);
-  return { appBaseUrl };
-}
-
-function getLoginUrl(appBaseUrl: string) {
-  if (appBaseUrl) return `${appBaseUrl}/api/login`;
-  return "/api/login";
-}
-
-function getDemoUrl(appBaseUrl: string) {
-  if (appBaseUrl) return appBaseUrl;
-  return "/app";
-}
-
 export default function Landing() {
   const { t } = useLanguage();
-  const { appBaseUrl } = useAppUrls();
 
-  const loginUrl = getLoginUrl(appBaseUrl);
-  const demoUrl = getDemoUrl(appBaseUrl);
+  const loginUrl = "/api/login";
+  const demoUrl = "/app";
 
   return (
     <div className="min-h-screen bg-background">

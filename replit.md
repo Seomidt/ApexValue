@@ -56,16 +56,11 @@ ApexValue is a multi-tenant B2B car trading and valuation platform with Gulf Rac
 - `/settings` - Profile, organization, BYOK integrations (8 API connectors), storage
 
 ## Domain & Routing Setup
-- **Marketing**: `apexvalue.net` (and `www.apexvalue.net`) serves landing page at `/landing`
-- **App**: `app.apexvalue.net` serves the webapp (login + product)
-- **Redirects**: `/app` and `/app/*` on marketing domain redirect 302 to `app.apexvalue.net/*`
-- **Config endpoint**: `GET /api/config/urls` returns `{ appBaseUrl, marketingBaseUrl }`
-- **Environment Variables**:
-  - `APP_BASE_URL` (production: `https://app.apexvalue.net`, dev: empty for local routing)
-  - `MARKETING_BASE_URL` (production: `https://apexvalue.net`, dev: empty)
-- **DNS Setup Required**: Both `apexvalue.net` and `app.apexvalue.net` should point to the same deployment
-- **Host-based routing**: Express middleware checks Host header; `app.*` serves webapp, otherwise serves marketing/landing
-- **Email/System links**: All system emails should use `APP_BASE_URL` as base
+- **Single domain**: `apexvalue.net` serves everything (no subdomain needed)
+- **Landing page**: `/` shows marketing landing page
+- **App**: `/app` and `/app/*` serves the full application
+- **Login**: `/api/login` triggers Replit Auth, redirects to `/app` after success
+- **DNS**: A record for `apexvalue.net` → Replit IP, CNAME `www` → `apexvalue.net`
 
 ## User Preferences
 - Dark mode by default
