@@ -118,7 +118,22 @@ export async function setupAuth(app: Express) {
     passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/app",
       failureRedirect: "/api/login",
-    })(req, res, next);
+    })(req, res, async (err: any) => {
+      if (err) return next(err);
+      
+      // Force refresh user session from storage to ensure isAdmin is up to date
+      if (req.user) {
+        const userId = (req.user as any).claims?.sub;
+        if (userId) {
+          const freshUser = await authStorage.getUser(userId);
+          if (freshUser) {
+            (req.user as any).isAdmin = freshUser.isAdmin;
+          }
+        }
+      }
+      
+      res.redirect("/app");
+    });
   });
 
   app.get("/api/logout", (req, res) => {
