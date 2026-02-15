@@ -9,10 +9,14 @@ export interface IAuthStorage {
   upsertUser(user: UpsertUser): Promise<User>;
 }
 
+const ADMIN_EMAILS = ["seomidt@gmail.com"];
+
 class AuthStorage implements IAuthStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    if (!user) return undefined;
+    const isAdmin = !!(user.email && ADMIN_EMAILS.includes(user.email));
+    return { ...user, isAdmin };
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
