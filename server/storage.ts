@@ -38,7 +38,12 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     if (!user) return undefined;
-    return { ...user, isAdmin: true };
+
+    // Hardcoded admin list for security - replace with your Replit user ID or email
+    const adminEmails = ["DIT_EMAIL_HER@EKSEMPEL.DK"]; 
+    const isHardcodedAdmin = user.email && adminEmails.includes(user.email);
+
+    return { ...user, isAdmin: isHardcodedAdmin || false };
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
