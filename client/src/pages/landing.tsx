@@ -34,7 +34,16 @@ function useAppUrls() {
   useEffect(() => {
     fetch("/api/config/urls")
       .then(r => r.json())
-      .then(data => setAppBaseUrl(data.appBaseUrl || ""))
+      .then(data => {
+        // If appBaseUrl is the same as current origin, we treat it as empty for local routing
+        const origin = window.location.origin;
+        const baseUrl = data.appBaseUrl || "";
+        if (baseUrl && baseUrl.startsWith(origin)) {
+          setAppBaseUrl("");
+        } else {
+          setAppBaseUrl(baseUrl);
+        }
+      })
       .catch(() => {});
   }, []);
   return { appBaseUrl };
