@@ -39,8 +39,8 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     if (!user) return undefined;
 
-    // Hardcoded admin list for security - replace with your Replit user ID or email
-    const adminEmails = ["DIT_EMAIL_HER@EKSEMPEL.DK"]; 
+    // Hardcoded admin list for security
+    const adminEmails = ["seomidt@gmail.com"]; 
     const isHardcodedAdmin = user.email && adminEmails.includes(user.email);
 
     return { ...user, isAdmin: isHardcodedAdmin || false };
