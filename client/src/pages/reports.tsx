@@ -76,14 +76,14 @@ async function generatePDF(
   const logoBase64 = await loadLogoAsBase64();
 
   doc.setFillColor(...darkBlue);
-  doc.rect(0, 0, pageWidth, 44, "F");
+  doc.rect(0, 0, pageWidth, 54, "F");
 
   doc.setFillColor(...orange);
-  doc.rect(0, 44, pageWidth, 2, "F");
+  doc.rect(0, 54, pageWidth, 2, "F");
 
   if (logoBase64) {
     try {
-      doc.addImage(logoBase64, "PNG", margin, 8, 48, 14);
+      doc.addImage(logoBase64, "PNG", margin, 10, 80, 24);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
@@ -100,31 +100,31 @@ async function generatePDF(
   doc.setTextColor(185, 217, 235);
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text(t("pdf.subtitle"), margin, 30);
+  doc.text(t("pdf.subtitle"), margin, 38);
   doc.setFontSize(7);
-  doc.text(`Rapport ID: AV-${vehicle.id}-${Date.now().toString(36).toUpperCase()}`, margin, 36);
+  doc.text(`Rapport ID: AV-${vehicle.id}-${Date.now().toString(36).toUpperCase()}`, margin, 44);
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   const vehicleTitle = `${vehicle.make} ${vehicle.model} ${vehicle.year}`;
-  doc.text(vehicleTitle, pageWidth - margin, 14, { align: "right" });
+  doc.text(vehicleTitle, pageWidth - margin, 18, { align: "right" });
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(185, 217, 235);
-  doc.text(`${vehicle.variant || ""} | ${vehicle.fuelType || ""} | ${vehicle.gearbox || ""}`, pageWidth - margin, 21, { align: "right" });
-  doc.text(`VIN: ${vehicle.vin || "N/A"}`, pageWidth - margin, 27, { align: "right" });
-  doc.text(`${t("pdf.generated")}: ${new Date().toLocaleDateString("da-DK")}`, pageWidth - margin, 33, { align: "right" });
+  doc.text(`${vehicle.variant || ""} | ${vehicle.fuelType || ""} | ${vehicle.gearbox || ""}`, pageWidth - margin, 25, { align: "right" });
+  doc.text(`VIN: ${vehicle.vin || "N/A"}`, pageWidth - margin, 31, { align: "right" });
+  doc.text(`${t("pdf.generated")}: ${new Date().toLocaleDateString("da-DK")}`, pageWidth - margin, 37, { align: "right" });
 
   const scoreColor: [number, number, number] = (vehicle.dealScore || 0) >= 70 ? [34, 197, 94] : (vehicle.dealScore || 0) >= 40 ? orange : [239, 68, 68];
   doc.setFillColor(...scoreColor);
-  doc.roundedRect(pageWidth - margin - 28, 36, 28, 7, 1, 1, "F");
+  doc.roundedRect(pageWidth - margin - 28, 42, 28, 7, 1, 1, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text(`Score: ${vehicle.dealScore || 0}/100`, pageWidth - margin - 14, 41, { align: "center" });
+  doc.text(`Score: ${vehicle.dealScore || 0}/100`, pageWidth - margin - 14, 47, { align: "center" });
 
-  y = 54;
+  y = 66;
 
   const sectionHeader = (title: string) => {
     checkPageBreak(14);
