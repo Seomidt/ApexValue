@@ -39,7 +39,7 @@ export default function Landing() {
       <header className="border-b bg-[#002776] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoPath} alt="ApexValue" className="h-7 w-auto" />
+            <img src={logoPath} alt="ApexValue" className="h-7 w-auto ml-[10px] mr-[10px] mt-[0px] mb-[0px] pl-[10px] pr-[10px] pt-[0px] pb-[0px]" />
             <span className="text-white font-bold text-sm tracking-wide hidden sm:inline">ApexValue</span>
           </div>
           <div className="flex items-center gap-2">
@@ -56,7 +56,6 @@ export default function Landing() {
           </div>
         </div>
       </header>
-
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#002776]/95 via-[#002776]/80 to-[#001a4d]/95" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAyYzguODM3IDAgMTYgNy4xNjMgMTYgMTZzLTcuMTYzIDE2LTE2IDE2LTE2LTcuMTYzLTE2LTE2IDcuMTYzLTE2IDE2LTE2eiIgc3Ryb2tlPSJyZ2JhKDE4NSwyMTcsMjM1LDAuMDUpIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
@@ -91,7 +90,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-bold">{t("landing.features_title")}</h2>
@@ -109,7 +107,6 @@ export default function Landing() {
           ))}
         </div>
       </section>
-
       <section className="bg-[#002776]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
@@ -132,7 +129,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 text-center">
         <h2 className="text-2xl font-bold">{t("landing.cta_title")}</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
@@ -151,7 +147,6 @@ export default function Landing() {
           </a>
         </div>
       </section>
-
       <footer className="border-t bg-[#002776]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-4 flex-wrap text-xs text-[#B9D9EB]/60">
           <div className="flex items-center gap-2">
