@@ -39,7 +39,7 @@ export default function Landing() {
       <header className="border-b bg-[#002776] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoPath} alt="ApexValue" className="h-7 w-auto ml-[10px] mr-[10px] mt-[0px] mb-[0px] pl-[10px] pr-[10px] pt-[0px] pb-[0px]" />
+            <img src={logoPath} alt="ApexValue" className="h-7 w-auto mt-[0px] mb-[0px] pt-[0px] pb-[0px] ml-[0px] mr-[0px] pl-[0px] pr-[0px]" />
             <span className="text-white font-bold text-sm tracking-wide hidden sm:inline">ApexValue</span>
           </div>
           <div className="flex items-center gap-2">
