@@ -83,9 +83,8 @@ async function generatePDF(
 
   if (logoBase64) {
     try {
-      // Set X to -7 to better align with the margin (14) after seeing the previous alignment was too far left
-      // Adjusted from -14 to -7 based on user feedback
-      doc.addImage(logoBase64, "PNG", -7, 8, 80, 24);
+      // Set X to 0 to align with the start of the text below
+      doc.addImage(logoBase64, "PNG", 0, 8, 80, 24);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
