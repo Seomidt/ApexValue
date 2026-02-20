@@ -83,8 +83,8 @@ async function generatePDF(
 
   if (logoBase64) {
     try {
-      // Set X to 0 to align with the start of the text below
-      doc.addImage(logoBase64, "PNG", 0, 8, 80, 24);
+      // Set X to -1 to align the visual start of the logo with the text below
+      doc.addImage(logoBase64, "PNG", -1, 8, 80, 24);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
