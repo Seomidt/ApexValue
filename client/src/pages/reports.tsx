@@ -83,9 +83,9 @@ async function generatePDF(
 
   if (logoBase64) {
     try {
-      // Set X to -14 to compensate for very large internal padding in logo image
-      // This will align the actual logo content with the margin (14)
-      doc.addImage(logoBase64, "PNG", -14, 8, 80, 24);
+      // Set X to -7 to better align with the margin (14) after seeing the previous alignment was too far left
+      // Adjusted from -14 to -7 based on user feedback
+      doc.addImage(logoBase64, "PNG", -7, 8, 80, 24);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
