@@ -45,9 +45,8 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/app" data-testid="link-logo">
-          <div className="flex items-center gap-3">
-            <img src={logoPath} alt="ApexValue" className="h-12 w-auto" />
-            <span className="font-bold text-lg tracking-tight">ApexValue</span>
+          <div className="flex items-center justify-center py-2">
+            <img src={logoPath} alt="ApexValue" className="h-20 w-auto" />
           </div>
         </Link>
         <div className="mt-3 flex items-center gap-2">
