@@ -38,9 +38,9 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-[#002776] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <img src={logoPath} alt="ApexValue" className="h-7 w-auto mt-[0px] mb-[0px] pt-[0px] pb-[0px] ml-[0px] mr-[0px] pl-[0px] pr-[0px]" />
-            <span className="text-white font-bold text-sm tracking-wide hidden sm:inline">ApexValue</span>
+          <div className="flex items-center gap-3">
+            <img src={logoPath} alt="ApexValue" className="h-10 w-auto" />
+            <span className="text-white font-bold text-lg tracking-tight hidden sm:inline">ApexValue</span>
           </div>
           <div className="flex items-center gap-2">
             <a href={demoUrl}>
@@ -149,9 +149,9 @@ export default function Landing() {
       </section>
       <footer className="border-t bg-[#002776]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-4 flex-wrap text-xs text-[#B9D9EB]/60">
-          <div className="flex items-center gap-2">
-            <img src={logoPath} alt="ApexValue" className="h-5 w-auto opacity-70" />
-            <span className="text-[#B9D9EB]/40">ApexValue</span>
+          <div className="flex items-center gap-3">
+            <img src={logoPath} alt="ApexValue" className="h-7 w-auto" />
+            <span className="text-[#B9D9EB] font-bold text-sm">ApexValue</span>
           </div>
           <p className="text-[#B9D9EB]/40">&copy; {new Date().getFullYear()} ApexValue. All rights reserved.</p>
         </div>
