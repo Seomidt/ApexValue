@@ -83,7 +83,8 @@ async function generatePDF(
 
   if (logoBase64) {
     try {
-      doc.addImage(logoBase64, "PNG", margin, 10, 80, 24);
+      // Adjusted X to align with margin (14), Y to 8, size remains 80x24
+      doc.addImage(logoBase64, "PNG", margin, 8, 80, 24);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
