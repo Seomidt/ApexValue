@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    --gulf-blue: #002776;
+    --gulf-orange: #FF6319;
+    --gulf-powder: #B9D9EB;
+    --sidebar-width: 240px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #0a0f1e;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(185, 217, 235, 0.3);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(185, 217, 235, 0.5);
+  }
+}
+
+@layer components {
+  /* Gulf button variants */
+  .btn-primary {
+    @apply bg-gulf-orange text-white px-4 py-2 rounded-lg font-semibold text-sm
+           hover:bg-gulf-orange-alt transition-all duration-150 shadow-orange-glow
+           focus:outline-none focus:ring-2 focus:ring-gulf-orange focus:ring-offset-2 focus:ring-offset-slate-900
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-gulf-blue/30 text-gulf-powder border border-gulf-blue/50 px-4 py-2 rounded-lg
+           font-semibold text-sm hover:bg-gulf-blue/50 transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-gulf-powder/50;
+  }
+
+  .btn-ghost {
+    @apply text-gulf-powder/70 px-3 py-2 rounded-lg text-sm hover:bg-white/5
+           hover:text-gulf-powder transition-all duration-150;
+  }
+
+  .btn-danger {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-lg
+           font-semibold text-sm hover:bg-red-500/30 transition-all duration-150;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-slate-900/80 border border-white/10 rounded-xl backdrop-blur-sm;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-white/10 flex items-center justify-between;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm
+           text-slate-200 placeholder-slate-500
+           focus:outline-none focus:ring-2 focus:ring-gulf-orange/50 focus:border-gulf-orange/50
+           transition-all duration-150;
+  }
+
+  .select-input {
+    @apply input appearance-none cursor-pointer;
+  }
+
+  .label {
+    @apply block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-hot {
+    @apply badge bg-gulf-orange/20 text-gulf-orange border border-gulf-orange/30;
+  }
+
+  .badge-buy {
+    @apply badge bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+
+  .badge-consider {
+    @apply badge bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-drop {
+    @apply badge bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-risk {
+    @apply badge bg-red-500/20 text-red-300 border border-red-500/20 text-xs;
+  }
+
+  .badge-info {
+    @apply badge bg-gulf-powder/20 text-gulf-powder border border-gulf-powder/30;
+  }
+
+  .badge-demo {
+    @apply badge bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  /* KPI cards */
+  .kpi-card {
+    @apply card p-5 hover:border-gulf-powder/20 transition-all duration-200;
+  }
+
+  /* Table */
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table th {
+    @apply text-xs font-medium text-slate-500 uppercase tracking-wider px-4 py-3
+           text-left border-b border-white/5;
+  }
+  .data-table td {
+    @apply px-4 py-3 border-b border-white/5;
+  }
+  .data-table tr:hover td {
+    background-color: rgba(255,255,255,0.025);
+  }
+
+  /* Sidebar nav items */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all duration-150
+           cursor-pointer;
+  }
+  .nav-item.active {
+    @apply text-gulf-powder bg-gulf-blue/40 border border-gulf-blue/30;
+  }
+
+  /* Status pills */
+  .status-found { @apply badge bg-slate-500/20 text-slate-400 border border-slate-500/30; }
+  .status-evaluating { @apply badge bg-blue-500/20 text-blue-400 border border-blue-500/30; }
+  .status-bid_placed { @apply badge bg-purple-500/20 text-purple-400 border border-purple-500/30; }
+  .status-won { @apply badge bg-emerald-600/20 text-emerald-400 border border-emerald-500/30; }
+  .status-transport { @apply badge bg-cyan-500/20 text-cyan-400 border border-cyan-500/30; }
+  .status-prep { @apply badge bg-amber-500/20 text-amber-400 border border-amber-500/30; }
+  .status-ready { @apply badge bg-lime-500/20 text-lime-400 border border-lime-500/30; }
+  .status-listed { @apply badge bg-gulf-orange/20 text-gulf-orange border border-gulf-orange/30; }
+  .status-sold { @apply badge bg-emerald-500/20 text-emerald-300 border border-emerald-400/30; }
+
+  /* Tabs */
+  .tab-bar {
+    @apply flex gap-1 border-b border-white/10 mb-6;
+  }
+  .tab-item {
+    @apply px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-300
+           border-b-2 border-transparent -mb-px cursor-pointer transition-all;
+  }
+  .tab-item.active {
+    @apply text-gulf-powder border-gulf-orange;
+  }
+}
+
+/* Racing stripe decorative element */
+.racing-stripe {
+  background: linear-gradient(90deg, #FF6319 0%, #FF671F 40%, transparent 100%);
+  height: 3px;
+}
+
+/* Deal score ring */
+.score-high { color: #10b981; }
+.score-mid { color: #f59e0b; }
+.score-low { color: #ef4444; }
+
+/* Cockpit grid bg pattern */
+.cockpit-bg {
+  background-color: #0a0f1e;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(0, 39, 118, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 99, 25, 0.05) 0%, transparent 50%);
+}

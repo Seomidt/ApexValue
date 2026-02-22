@@ -1,0 +1,31 @@
+# deps
+/node_modules
+/.pnp
+.pnp.js
+
+# next
+/.next/
+/out/
+
+# prod
+/build
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# misc
+npm-debug.log*
+.DS_Store
+*.pem
+/public/uploads
+/tmp
