@@ -2,7 +2,11 @@ import { createClient } from '@libsql/client/node';
 import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 
-const url = process.env.DATABASE_URL || 'file:./apexvalue.db';
+const url = process.env.DATABASE_URL;
+if (!url) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
 const client = createClient({ url, authToken });
