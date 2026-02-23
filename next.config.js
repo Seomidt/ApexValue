@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    instrumentationHook: true,
     serverComponentsExternalPackages: ['@libsql/client', '@libsql/client/node'],
   },
   images: {

@@ -9,21 +9,17 @@ export async function ensureStarted() {
   started = true;
   try {
     await initDB();
-    if (process.env.SEED_DEMO === 'true') {
-      const { default: seed } = await import('./seed').catch(() => ({ default: null }));
-      // Only import seed in development
-      if (process.env.NODE_ENV !== 'production') {
-        const { db } = await import('./db');
-        const { organizations } = await import('./schema');
-        const { eq } = await import('drizzle-orm');
-        const existing = await db.query.organizations.findFirst({
-          where: eq(organizations.id, 'demo-org-001'),
-        });
-        if (!existing) {
-          console.log('Seeding demo data...');
-          const { default: runSeed } = await import('./seed');
-          if (typeof runSeed === 'function') await runSeed();
-        }
+    if (process.env.SEED_DEMO === 'true' && process.env.NODE_ENV !== 'production') {
+      const { db } = await import('./db');
+      const { organizations } = await import('./schema');
+      const { eq } = await import('drizzle-orm');
+      const existing = await db.query.organizations.findFirst({
+        where: eq(organizations.id, 'demo-org-001'),
+      });
+      if (!existing) {
+        console.log('Seeding demo data...');
+        const { default: runSeed } = await import('./seed');
+        if (typeof runSeed === 'function') await runSeed();
       }
     }
   } catch (err) {
