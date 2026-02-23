@@ -3,8 +3,9 @@ import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 
 const url = process.env.DATABASE_URL || 'file:./apexvalue.db';
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-const client = createClient({ url });
+const client = createClient({ url, authToken });
 
 export const db = drizzle(client, { schema });
 
