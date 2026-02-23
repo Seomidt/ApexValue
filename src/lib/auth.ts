@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
-import { db } from './db';
+import { db, ensureDB } from './db';
 import { users, sessions, organizations } from './schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
@@ -61,6 +61,8 @@ export async function getSessionWithUser() {
   const session = await getSession();
   if (!session) return null;
 
+  await ensureDB();
+
   const user = await db.query.users.findFirst({
     where: eq(users.id, session.userId),
   });
@@ -92,6 +94,8 @@ export function clearSessionCookie(): void {
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 export async function loginUser(email: string, password: string) {
+  await ensureDB();
+
   const user = await db.query.users.findFirst({
     where: eq(users.email, email.toLowerCase().trim()),
   });

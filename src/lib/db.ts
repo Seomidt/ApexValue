@@ -14,3 +14,13 @@ const client = createClient({ url, authToken });
 export const db = drizzle(client, { schema });
 
 export type DB = typeof db;
+
+let dbReady = false;
+
+/** Ensures tables exist before first use. No-op after the first call. */
+export async function ensureDB(): Promise<void> {
+  if (dbReady) return;
+  dbReady = true;
+  const { initDB } = await import('./init-db');
+  await initDB();
+}
