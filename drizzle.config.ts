@@ -1,11 +1,14 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from "drizzle-kit";
 
-export default {
-  schema: './src/lib/schema.ts',
-  out: './drizzle',
-  dialect: 'sqlite',
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL, ensure the database is provisioned");
+}
+
+export default defineConfig({
+  out: "./migrations",
+  schema: "./shared/schema.ts",
+  dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:./apexvalue.db',
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: process.env.DATABASE_URL,
   },
-} satisfies Config;
+});
