@@ -31,7 +31,7 @@ const markets = [
 export default function Landing() {
   const { t } = useLanguage();
 
-  const loginUrl = "/api/login";
+  const loginUrl = "/login";
   const demoUrl = "/app";
 
   return (

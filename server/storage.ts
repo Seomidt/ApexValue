@@ -6,10 +6,10 @@ import {
   type Organization, type InsertOrganization,
   type Event, type InsertEvent,
   vehicles, marketComps, costTemplates, organizations, events,
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
-import { users } from "@shared/models/auth";
+import { users } from "../shared/models/auth";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;

@@ -15,6 +15,7 @@ import { LogIn, Zap } from "lucide-react";
 import { LanguageContext, setLanguage as setI18nLanguage, getLanguage, t as i18nT, type SupportedLanguage } from "@/lib/i18n";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import AuctionFinder from "@/pages/auction-finder";
 import VehicleDetail from "@/pages/vehicle-detail";
@@ -26,6 +27,7 @@ import Settings from "@/pages/settings";
 import Compare from "@/pages/compare";
 import Admin from "@/pages/admin";
 import VatCalculator from "@/pages/vat-calculator";
+import TeamOS from "@/pages/team-os";
 
 type AppMode = "demo" | "live";
 const ModeContext = createContext<{ mode: AppMode; setMode: (m: AppMode) => void }>({ mode: "demo", setMode: () => {} });
@@ -45,6 +47,7 @@ function AppRouter() {
       <Route path="/app/compare" component={Compare} />
       <Route path="/app/admin" component={Admin} />
       <Route path="/app/settings" component={Settings} />
+      <Route path="/app/team-os" component={TeamOS} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -68,7 +71,7 @@ function ModeToggle() {
           className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${mode === "live" ? "bg-emerald-500 text-white" : "text-muted-foreground"}`}
           onClick={() => {
             if (!user) {
-              window.location.href = "/api/login";
+              window.location.href = "/login";
               return;
             }
             setMode("live");
@@ -107,7 +110,7 @@ function MainLayout() {
             <div className="flex items-center gap-3">
               <ModeToggle />
               {!user && (
-                <a href="/api/login">
+                <a href="/login">
                   <Button className="bg-[#FF6319] text-white border-[#FF6319]" data-testid="button-header-login">
                     <LogIn className="w-4 h-4 mr-1.5" /> Log Ind
                   </Button>
@@ -141,6 +144,10 @@ function AppContent() {
 
   if (location.startsWith("/app")) {
     return <MainLayout />;
+  }
+
+  if (location === "/login") {
+    return <Login />;
   }
 
   return <Landing />;

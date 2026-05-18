@@ -1,23 +1,11 @@
-import type { Express, RequestHandler } from "express";
+import type { Express } from "express";
 import { type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { setupAuth, registerAuthRoutes, isAuthenticated, isAdminUser } from "./replit_integrations/auth";
 import { seedDemoData } from "./seed";
-import { insertVehicleSchema, insertCostTemplateSchema, insertEventSchema, VEHICLE_STATUSES } from "@shared/schema";
+import { insertVehicleSchema, insertCostTemplateSchema, insertEventSchema, VEHICLE_STATUSES } from "../shared/schema";
 import { isR2Configured, testR2Connection, uploadFile, listFiles, deleteFile, getPresignedUrl } from "./r2";
-
-const isAdmin: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-  if (!req.isAuthenticated() || !user?.claims?.sub) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const dbUser = await storage.getUser(user.claims.sub);
-  if (!dbUser?.isAdmin) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-  next();
-};
 
 export async function registerRoutes(
   httpServer: Server,
@@ -193,7 +181,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/admin/stats", isAdmin, async (_req, res) => {
+  app.get("/api/admin/stats", isAuthenticated, isAdminUser, async (_req, res) => {
     try {
       const vehicles = await storage.getVehicles();
       const pipeline = vehicles.filter(v => v.status !== "sold");
